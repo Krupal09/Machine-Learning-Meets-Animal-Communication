@@ -24,8 +24,8 @@ from os import listdir, mkdir
 import sys
 
 def makeSpectrograms ():
-	#root = "/net/projects/scratch/winter/valid_until_31_July_2021/0-animal-communication/"
-	root = "/home/hunaid/lucidmonkeys/"
+	root = "/net/projects/scratch/winter/valid_until_31_July_2021/0-animal-communication/"
+	#root = "/home/hunaid/lucidmonkeys/"
 	path = root + sys.argv[2]
 	
 	filenames = [f for f in listdir(path)]
