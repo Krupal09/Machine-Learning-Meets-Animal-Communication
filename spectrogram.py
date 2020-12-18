@@ -7,7 +7,10 @@ This program converts wav files into spectrograms and saves them as numpy arrays
 To define the root folder, open and edit the file
 The first argument is wether the wav file is dual or mono channel. enter mono for mono, dual for dual
 The second argument is the path relative to the root where the audio files are
-The second argument is the path relative to the root where the numpy matrices shall be saved
+The second argument is the path relative to the root + the audio file folder where the numpy matrices shall be saved
+
+Example use:
+sudo python3 spectrogram.py dual audio/ spectrograms/
 
 Hunaid Hameed
 hunaidhameed@hotmail.com
@@ -34,7 +37,7 @@ def makeSpectrograms ():
 	for filename in filenames:
 		sample_rate, samples = wavfile.read(path + filename)
 		
-		samples = samples[:500]
+		#samples = samples[:500]
 		
 		if sys.argv[1] == "mono":
 			frequencies, times, spectrogram = signal.spectrogram(samples, sample_rate)
