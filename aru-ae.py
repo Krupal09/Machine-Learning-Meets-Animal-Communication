@@ -1,3 +1,4 @@
+#!/net/projects/scratch/winter/valid_until_31_July_2021/hhameed/miniconda3/bin/python3
 # ## Implementing Autoencoder
 # 
 # https://gist.github.com/AFAgarap/4f8a8d8edf352271fa06d85ba0361f26
@@ -6,16 +7,13 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torchvision
+from torchvision import transforms
 
 from torch.utils.data import Dataset, DataLoader
 
 import os
 
 import numpy as np
-
-
-# In[65]:
-
 
 class SpectrogramDatasetLoader(Dataset):
 
@@ -43,17 +41,16 @@ class SpectrogramDatasetLoader(Dataset):
                                 self.spectrograms[idx])
         image = np.load(img_name)
 
-        return torch.tensor(image)
+        return image
 
-
-#data = SpectrogramDatasetLoader('/home/hunaid/lucidmonkeys/spectrograms/')
-data = SpectrogramDatasetLoader('/net/projects/scratch/winter/valid_until_31_July_2021/0-animal-communication/data_grid/Chimp_IvoryCoast/aru_continuous_recordings/spectrograms/')
+data = SpectrogramDatasetLoader('/net/projects/scratch/winter/valid_until_31_July_2021/0-animal-communication/data_grid/Chimp_IvoryCoast/aru_continuous_recordings/spectrograms/', 129, 65)
 
 class autoencoder(nn.Module):
     def __init__(self):
         super(autoencoder, self).__init__()
         self.encoder = nn.Sequential(
             nn.Linear(129 * 129, 100),
+            #nn.Linear(33171447, 100),
             nn.ReLU(True),
             nn.Linear(100, 64),
             nn.ReLU(True), nn.Linear(64, 12), nn.ReLU(True), nn.Linear(12, 3))
@@ -70,10 +67,6 @@ class autoencoder(nn.Module):
         x = self.decoder(x)
         return x
 
-
-model.parameters()
-
-get_ipython().run_line_magic('pinfo', 'torch.nn.Module.parameters')
 
 batch_size = 512
 epochs = 20
@@ -104,8 +97,9 @@ for epoch in range(epochs):
             # reshape mini-batch data to [N, 784] matrix
             # load it to the active device
             #batch_features = batch_features.view(-1, 784).to(device)
-            snippet = spectrogram[:, 0+(_*stepsize):129+(_*stepsize)]
-            snippet = torch.reshape(snippet, (-1,))
+            norm = np.linalg.norm(spectrogram[:, 0+(_*stepsize):129+(_*stepsize)])
+            snippet = spectrogram[:, 0+(_*stepsize):129+(_*stepsize)] / norm
+            snippet = torch.reshape( torch.from_numpy( snippet ), (-1,) ).to(device)
 
             # reset the gradients back to zero
             # PyTorch accumulates gradients on subsequent backward passes
