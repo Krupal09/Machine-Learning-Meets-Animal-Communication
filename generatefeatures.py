@@ -1,6 +1,6 @@
 #!/net/projects/scratch/winter/valid_until_31_July_2021/hhameed/miniconda3/bin/python3
 # ## Implementing Autoencoder
-# 
+#
 # https://gist.github.com/AFAgarap/4f8a8d8edf352271fa06d85ba0361f26
 
 import torch
@@ -41,7 +41,7 @@ class SpectrogramDatasetLoader(Dataset):
                                 self.spectrograms[idx])
         image = np.load(img_name)
 
-        return image
+        return (self.spectrograms[idx], image)
 
 data = SpectrogramDatasetLoader('/net/projects/scratch/winter/valid_until_31_July_2021/0-animal-communication/data_grid/Chimp_IvoryCoast/aru_continuous_recordings/spectrograms/', 129, 65)
 
@@ -78,29 +78,31 @@ learning_rate = 1e-1
 #  use gpu if available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# create a model from `AE` autoencoder class
-# load it to the specified device, either gpu or cpu
+# create a model from `AE` autoencoder class # load it to the specified device, either gpu or cpu
 # model = AE(input_shape=129).to(device)
 model = autoencoder()
-model.load_state_dict( torch.load("../../0-animal-communication/autoencoder/1", map_location=device) )
+model.load_state_dict( torch.load("/net/projects/scratch/winter/valid_until_31_July_2021/0-animal-communication/autoencoder/1", map_location=device) )
 model = model.to(device)
 
 fh = open("features1", "w+")
+fh.write("filename,start_of_spectrogram,end_of_spectrogram,bottleneck1,bottleneck2,bottleneck3\n")
 
 for epoch in range(epochs):
     loss = 0
     stepsize = 129
-    
-    for spectrogram in data:
+
+    for flname, spectrogram in data:
         chops = int(spectrogram.shape[1] / stepsize)
         for _ in range(chops):
             # reshape mini-batch data to [N, 784] matrix
             # load it to the active device
             #batch_features = batch_features.view(-1, 784).to(device)
-            norm = np.linalg.norm(spectrogram[:, 0+(_*stepsize):129+(_*stepsize)])
-            snippet = spectrogram[:, 0+(_*stepsize):129+(_*stepsize)] / norm
+            start = 0+(_*stepsize)
+            end = 129+(_*stepsize)
+            norm = np.linalg.norm(spectrogram[:, start:end])
+            snippet = spectrogram[:, start:end] / norm
             snippet = torch.reshape( torch.from_numpy( snippet ), (-1,) ).to(device)
-            
+
             features = model.genfeatures(snippet)
 
-            fh.write(str(features[0]) + "," + str(features[1]) + "," + str(features[2]))
+            fh.write(flname + "," + str(start) + "," + str(end) + "," + str(features[0].item()) + "," + str(features[1].item()) + "," + str(features[2].item()) + "\n")
