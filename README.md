@@ -3,7 +3,7 @@
 ## Animal Communication Meets Machine Learning
 ## Study Project at the University of Osnabrueck, Germany
 
-> To Those Who Will Come After Me.
+> To Those Who Will Come After Me,
 > 
 > I started this study project with the vision of understanding how Deep Neural Networks work, and bridging the gap between human and artificial intelligence. The task taught me a lot, about my skills and the naivete of my vision. There is only so much I achieved, but in this repository, I have laid the groundwork of taking this vision foward.
 >
@@ -14,7 +14,9 @@
 > We were able to produce some strong results. You are welcome to clone this repository and carry the baton forward. I will be available to answer you queries.
 >
 > Regards
+>
 > Hunaid Hameed
+>
 >
 > _Whatever you can do or dream you can, begin it. Boldness has genius, power, and magic in it. -Goethe_
 
@@ -50,6 +52,8 @@ The contents of the file are also embedded in the filename, the contents were ma
     1. If they are similar, the model works and has the same discrimination ability as a person. Now test it on unseen/new/novel data.
     2. If they are not similar, you need reevaluate you approach and try again (or quit)
 
+![plan-visualization](images/plan.png)
+
 ### The Infrastructure
 
 The experiments are run on the _grid_. The grid is a technical term for a collection of computers which do not share RAM within themselves. Instructions and FAQs on how to use the grid and work with and around it are in the `grid.md` file.
@@ -80,11 +84,11 @@ This file will:
 12. Pass the entire dataset through the trained Autoencoder and write down the bottleneck layer features in a csv file
 13. Cluster these features and save the cluster assignments in the csv file
 
-Keep the folders for the results you like, delete the rest. The code saves all interim results, therefore, if the code crashed, you have something.
+Keep the folders for the results you like, delete the rest. The code saves all interim results, therefore, if the code crashes, you have something.
 
 ### Getting Started
 
-1. Play some of the 2s recording and develop intuition of the data. Being oblivion to the data is a detriment.
+1. Play some of the 2s recording and develop intuition of the data. Being oblivious to the data is a detriment.
 2. Read and understand the code.
 3. Run an experiment.
     This just means, run the `pipeline.py` file. View and interpret the results. This is your starting point.
