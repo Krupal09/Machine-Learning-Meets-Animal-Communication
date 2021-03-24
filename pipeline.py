@@ -25,36 +25,76 @@ import pandas as pd
 from sklearn.mixture import GaussianMixture
 from numpy import random
 
-import datetime
+from datetime import datetime
 import os
 import sys
+import io
 
-print(os.getcwd())
 sys.stdout.flush()
 # generate folder for all files using current timestamp
 folder = datetime.now().strftime("%d%b%Y-%H%M")
 
 os.mkdir(folder)
-sys.stdout = open(folder + "/stdout", "w")
-sys.stderr = open(folder + "/stderr", "w")
+sys.stdout = open(folder + "/output", "w")
+sys.stderr = open(folder + "/error", "w")
+
+# change nbottleneck to the number of neurons in the bottleneck layer
+nbottleneck = 7
 
 # define model
 class autoencoder(nn.Module):
     def __init__(self):
         super(autoencoder, self).__init__()
         self.encoder = nn.Sequential(
-            nn.Linear(194 * 257, 100),
-            #nn.Linear(33171447, 100),
+            nn.Linear(194 * 257, 24929),
             nn.ReLU(True),
-            nn.Linear(100, 64),
-            nn.ReLU(True), nn.Linear(64, 12), nn.ReLU(True), nn.Linear(12, 3))
+            nn.Linear(24929, 12464),
+            nn.ReLU(True),
+            nn.Linear(12464, 6232),
+            nn.ReLU(True),
+            nn.Linear(6232, 3116),
+            nn.ReLU(True),
+            nn.Linear(3116, 1558),
+            nn.ReLU(True),
+            nn.Linear(1558, 779),
+            nn.ReLU(True),
+            nn.Linear(779, 390),
+            nn.ReLU(True),
+            nn.Linear(390, 195),
+            nn.ReLU(True),
+            nn.Linear(195, 98),
+            nn.ReLU(True),
+            nn.Linear(98, 49),
+            nn.ReLU(True),
+            nn.Linear(49, 25),
+            nn.ReLU(True),
+            nn.Linear(25, nbottleneck))
+
         self.decoder = nn.Sequential(
-            nn.Linear(3, 12),
+            nn.Linear(nbottleneck, 25),
             nn.ReLU(True),
-            nn.Linear(12, 64),
+            nn.Linear(25, 49),
             nn.ReLU(True),
-            nn.Linear(64, 100),
-            nn.ReLU(True), nn.Linear(100, 194 * 257), nn.Tanh())
+            nn.Linear(49, 98),
+            nn.ReLU(True),
+            nn.Linear(98, 195),
+            nn.ReLU(True),
+            nn.Linear(195, 390),
+            nn.ReLU(True),
+            nn.Linear(390, 779),
+            nn.ReLU(True),
+            nn.Linear(779, 1558),
+            nn.ReLU(True),
+            nn.Linear(1558, 3116),
+            nn.ReLU(True),
+            nn.Linear(3116, 6232),
+            nn.ReLU(True),
+            nn.Linear(6232, 12464),
+            nn.ReLU(True),
+            nn.Linear(12464, 24929),
+            nn.ReLU(True),
+            nn.Linear(24929, 194 * 257),
+            nn.Tanh())
 
     def forward(self, x):
         x = self.encoder(x)
@@ -86,10 +126,11 @@ class SpectrogramDatasetLoader(Dataset):
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
-        img_name = os.path.join(self.root_dir, self.spectrograms[idx])
-        image = torch.load(io.BytesIO( open(img_name, "rb").read() ))["data"]
+        img_name = self.spectrograms[idx]
+        img_path = os.path.join(self.root_dir, self.spectrograms[idx])
+        image = torch.load(io.BytesIO( open(img_path, "rb").read() ))["data"]
 
-        return image
+        return { "name" : img_name, "spectrogram" : image }
 
 data = SpectrogramDatasetLoader('/net/projects/scratch/winter/valid_until_31_July_2021/0-animal-communication/data_grid/Chimp_IvoryCoast/detector_train_ds_spec/')
 
@@ -100,10 +141,14 @@ learning_rate = 1e-1
 
 #  use gpu if available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+#device = "cpu"
 
 # create a model from `AE` autoencoder class
 # load it to the specified device, either gpu or cpu
 model = autoencoder().to(device)
+
+# write model description to standard output
+print(model)
 
 # create an optimizer object
 # Adam optimizer with learning rate 1e-3
@@ -116,7 +161,9 @@ for epoch in range(epochs):
     loss = 0
 
     for spectrogram in data:
-        break
+        # the data array returns a dict of spectrogram and its name
+        spectrogram = spectrogram["spectrogram"]
+
         # if the spectrogram is not of width 194 units, don't run the iteration
         if spectrogram.shape[1] != 194:
             continue
@@ -157,35 +204,64 @@ for epoch in range(epochs):
 torch.save(model.state_dict(), folder + "/model")
 
 # visualize regenerated samples
-nsamples = 5
+os.mkdir("regen-spectrograms")
+nsamples = 15
+
 for sample in range(nsamples):
-    s = random.uniform(0, len(data))
+    s = int( np.round( random.uniform(0, len(data)) ) )
+
+    spectrogram = data[s]["spectrogram"]
+
+    # if the spectrogram is not of width 194 units, don't run the iteration
+    if spectrogram.shape[1] != 194:
+        continue
 
     norm = np.linalg.norm(spectrogram)
     snippet = spectrogram / norm
     snippet = torch.reshape( snippet, (-1,) ).to(device)
 
-    regen = model(data[s])
+    regen = model(snippet)
 
-    c = np.concatenate(data[s], np.zeros(data[s].shape[0], 5).T)
-    c = np.concatenate(c, regen.T)
+    # prepare a white border between to place between original and reproduced
+    whiteborder = np.zeros( (50, data[s]["spectrogram"].shape[2]) )
+
+    # reshape snippet into spectrogram shape
+    #snippet = snippet.reshape( (data[s].shape[1:2]) )
+    snippet = snippet.reshape( (194, 257) )
+
+    # reshape regenerated output into a spectrogram
+    regen = regen.detach().numpy().reshape( (194, 257) )
+
+    c = np.concatenate((snippet, whiteborder))
+    c = np.concatenate((c, regen))
 
     plt.matshow(c)
-    plt.savefig(s)
+    plt.savefig(folder + "/regen-spectrograms/" + str(s))
 
 # extract features
-df = pd.DataFrame()
-df.columns = [filename] + ["bottleneck" + str(n) for n in nbottleneck]
+df = pd.DataFrame( columns = ["filename"] + ["bottleneck" + str(_) for _ in range(nbottleneck)] )
 for spectrogram in data:
-    features = model.generatefeatures(spectrogram)
-    features = [str(f.item()) for f in features]
-    df.append([spectrogram.filename] + features)
+    imagename = spectrogram["name"]
+    spectrogram = spectrogram["spectrogram"]
+
+    # if the spectrogram is not of width 194 units, don't run the iteration
+    if spectrogram.shape[1] != 194:
+        continue
+
+    norm = np.linalg.norm(spectrogram)
+    snippet = spectrogram / norm
+    snippet = torch.reshape( snippet, (-1,) ).to(device)
+
+    features = model.generatefeatures(snippet).detach().numpy()
+    #features = [str(f.item()) for f in features]
+    df = df.append( dict( zip( df.columns, [imagename] + list(features) ) ), ignore_index=True )
+
+df.to_csv(folder + "/features")
 
 # perform clustering
-clustering = GaussianMixture(n_components=7, random_state=0).fit(df[["bottleneck1", "bottleneck2", "bottleneck3"]])
+clustering = GaussianMixture(n_components=7, random_state=0).fit(df[[ "bottleneck" + str(_) for _ in range(nbottleneck) ]])
 
-points = clustering.means_
-df.clusterlabels = points
+df["clusterlabels"] = clustering.means_
 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
@@ -198,7 +274,7 @@ ax.set_zlabel('Z')
 plt.savefig(folder + '/gmmmixtures')
 
 # write to file
-pd.to_csv(folder + "/features")
+df.to_csv(folder + "/features")
 
 sys.stdout.close()
 sys.stderr.close()
