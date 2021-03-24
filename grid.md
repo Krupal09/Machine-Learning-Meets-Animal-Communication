@@ -17,26 +17,30 @@ Refer to the docs of conda to learn more about its use.
 
 ## FAQs
 
-Q1: What to do in case of running out of space of 5GB in the personal folder? As each home folder has a limit of 5 GB
-A: It is better to not create a conda environment in the home folder but in the scratch drive, which has a limit in TB.
+> Q1: What to do in case of running out of space of 5GB in the personal folder? As each home folder has a limit of 5 GB
+>
+> It is better to not create a conda environment in the home folder but in the scratch drive, which has a limit in TB.
 
-Q2: How do I submit a command to the queue?
-A: qsub -l mem=4G script.py
-This will start script.py with 4 GB memory.
+> Q2: How do I submit a command to the queue?
+>
+> qsub -l mem=4G script.py
+> This will start script.py with 4 GB memory.
 
-Q3: How do I tell if my script which I submitted as a job is done running? What is the current status of my job?
-A: Type `qstat` in the terminal. If your script is running, it will be in the list shown, otherwise not.
+> Q3: How do I tell if my script which I submitted as a job is done running? What is the current status of my job?
+> 
+> Type `qstat` in the terminal. If your script is running, it will be in the list shown, otherwise not.
 
-Q4: Where is the output of my submitted job?
-A: In your home folder. Type `cd`. You will reach your home folder. Here, you will find 2 files, for the output and the error stream. The name of the file is prefixed with `o-` for output and `e-` for error.
+**Q4: Where is the output of my submitted job?**
 
+In your home folder. Type `cd`. You will reach your home folder. Here, you will find 2 files, for the output and the error stream. The name of the file is prefixed with `o-` for output and `e-` for error.
 
+**Q5: The state of my job is Eqw, what should I do?**
 
-Q5: The state of my job is Eqw, what should I do?
-A: Eqw means waiting in the queue in an error state. Type `qstat -j <jobid>` to find out the error. To learn more about error states, go here.
+Eqw means waiting in the queue in an error state. Type `qstat -j <jobid>` to find out the error. To learn more about error states, go here.
 
-Q6: What is the job ID of the job I submitted?
-A: Typing `qstat` in the terminal will show you a table of the jobs you have submitted and their IDs. There is other useful information as well.
+**Q6: What is the job ID of the job I submitted?**
+
+Typing `qstat` in the terminal will show you a table of the jobs you have submitted and their IDs. There is other useful information as well.
 
 Q7: How do I delete a job?
 A: `qdel <job_id>`
