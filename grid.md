@@ -2,15 +2,15 @@
 
 ## Initial Steps
 1. Navigate to the Valid-Until-July-31 folder
-2. Run “touch 00-APPLY-FOR-STORAGE/arbitraryfile”
+2. Run `touch 00-APPLY-FOR-STORAGE/arbitraryfile`
 3. A folder with your username will be created in the Valid-Until-July-31 folder. You will also receive an email notification for this. This folder is storage for the project.
 4. Navigate to your folder
-5. Inside your folder run, “wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh”
-6. Run “chmod +x Miniconda3-latest-Linux-x86_64.sh”
-7. Run “./Miniconda3-latest-Linux-x86_64.sh”
+5. Inside your folder run, `wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh`
+6. Run `chmod +x Miniconda3-latest-Linux-x86_64.sh`
+7. Run `./Miniconda3-latest-Linux-x86_64.sh`
 8. Make sure the path is set to your folder in the SP directory and not outside it
 9. Log out, and log in again
-10. Run “which conda”. You will be shown a version number. This means you have anaconda. You are mostly set up.
+10. Run `which conda`. You will be shown a version number. This means you have anaconda. You are mostly set up.
 
 Beyond this point you can install any library using `conda install _arbitrarylibrary_`
 Refer to the docs of conda to learn more about its use.
@@ -19,7 +19,7 @@ Refer to the docs of conda to learn more about its use.
 
 **Q1: How do I submit a command to the queue?**
 
-qsub -l mem=4G script.py
+`qsub -l mem=4G script.py`
 This will start script.py with 4 GB memory.
 
 **Q2: How do I tell if my script which I submitted as a job is done running? What is the current status of my job?**
@@ -32,7 +32,7 @@ In your home folder. Type `cd`. You will reach your home folder. Here, you will 
 
 **Q4: The state of my job is Eqw, what should I do?**
 
-Eqw means waiting in the queue in an error state. Type `qstat -j <jobid>` to find out the error. To learn more about error states, go here.
+Eqw means waiting in the queue in an error state. Type `qstat -j <jobid>` to find out the error. To learn more about error states, [go here](https://www.ace-net.ca/wiki/Qstat).
 
 **Q5: What is the job ID of the job I submitted?**
 
@@ -44,12 +44,12 @@ A: `qdel <job_id>`
 
 **Q7: The grid tells me I don’t have conda installed but I have installed it. How do I use my conda installation with the grid?**
 
-A: qsub -l mem=100M -v PATH trainae.sh
+A: `qsub -l mem=100M -v PATH trainae.sh`
 The command above will pass your environment to the grid and your conda install and all the libraries you have will be used.
 
 **Q8: I submitted a job and got this error: `/var/lib/gridengine/util/starter.sh: line 41: 29161 Killed           	/usr/bin/cgexec -g freezer,memory,cpuset:${CGPATH} $@`. What is wrong?**
 
-A: Your job requires too much memory which cannot be allocated so the grid killed it. Read Question 10.
+A: Your job requires too much memory which cannot be allocated so the grid killed it. Read the next question.
 
 **Q9: My jobs get killed after 90 minutes of run time. Why?**
 
