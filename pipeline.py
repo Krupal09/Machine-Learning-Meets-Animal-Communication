@@ -151,7 +151,7 @@ model = autoencoder().to(device)
 print(model)
 
 # create an optimizer object
-# Adam optimizer with learning rate 1e-3
+# Adam optimizer with learning rate 1e-1
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
 # mean-squared error loss
