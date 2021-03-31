@@ -86,6 +86,16 @@ This file will:
 
 Keep the folders for the results you like, delete the rest. The code saves all interim results, therefore, if the code crashes, you have something.
 
+#### Output of pipeline.py
+| File/Folder | Purpose |
+|-------------|---------|
+| output      | all standard output is in here |
+| error       | all standard error is in here |
+| model       | the trained model is saved here in a format pytorch is read it for reuse |
+| features    | features extracted from the bottleneck layer and cluster name |
+| gmmmixtures.png | image of cluster visualization |
+| regen-spectrograms/ | a folder of regenerated spectrograms. the top is the original, bottom is the regenerated spectrogram. file name is the same as the filename of the spectrogram|
+
 ### Getting Started
 
 1. Play some of the 2s recording and develop intuition of the data. Being oblivious to the data is a detriment.
