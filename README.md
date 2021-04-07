@@ -7,7 +7,7 @@
 > 
 > I started this study project with the vision of understanding how Deep Neural Networks work, and bridging the gap between human and artificial intelligence. The task taught me a lot, about my skills and the naivete of my vision. There is only so much I achieved, but in this repository, I have laid the groundwork of taking this vision foward.
 >
-> The idea was to use shallow autoencoders to learn a representation of spectrograms of chimpanzee recordings, and use these low dimensional representations to cluster the audio to identify components of chimpanzee language. The spe
+> The idea was to use shallow autoencoders to learn a representation of spectrograms of chimpanzee recordings, and use these low dimensional representations to cluster the audio to identify components of chimpanzee language.
 >
 > You will find a `pipeline.py` file. This file performs the entire process of reading the data, reducing its dimensions and clustering those dimensions. I have provided an explanation of the code and commented it thoroughly in order to facilitate users in tweaking the model and running their own experiments. I have taken extra pain to reduce redundant work.
 >
