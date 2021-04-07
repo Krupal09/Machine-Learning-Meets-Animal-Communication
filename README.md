@@ -25,6 +25,8 @@
 
 Building a Chimpanzee classifier does not inform us on their language, neither does it inform us on how the classifier work. However, if we keep our models small, we can apply techniques in interpretability to interpret their inner workings. This, in turn, can refine our thinking.
 
+To learn more, read the `whitebox-ai.pdf` presentation file. It also has a list of suggested reading material.
+
 ### The Dataset
 
 At our disposal, is a dataset of (approximately) 2s recordings of chimpanzees which contain a:
@@ -36,7 +38,7 @@ At our disposal, is a dataset of (approximately) 2s recordings of chimpanzees wh
 - Food Grunt
 - Pant Grunt
 
-The files are in the folder, `/net/projects/scratch/winter/valid_until_31_July_2021/0-animal-communication/data_grid/Chimp_IvoryCoast/detector_train_ds_spec/` on the grid, and which of the above mentioned _calls_ they contain is mentioned in the file `labelsfromfilename` in this repository.
+The files are in the folder, `/net/projects/scratch/winter/valid_until_31_July_2021/0-animal-communication/data_grid/Chimp_IvoryCoast/detector_train_ds_spec/` on the grid (the grid is explained in the infrastructure section), and which of the above mentioned _calls_ they contain is mentioned in the file `labelsfromfilename` in this repository.
 
 The contents of the file are also embedded in the filename, the contents were manually verified by Rachael.
 
