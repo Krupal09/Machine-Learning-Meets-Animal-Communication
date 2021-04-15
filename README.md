@@ -23,7 +23,7 @@
 
 ### The Vision
 
-Building a Chimpanzee classifier does not inform us on their language, neither does it inform us on how the classifier work. However, if we keep our models small, we can apply techniques in interpretability to interpret their inner workings. This, in turn, can refine our thinking.
+Building a Chimpanzee classifier alone does not inform us on their vocal communication system, neither does it inform us on how the classifier work. However, if we keep our models small, we can apply techniques in interpretability to interpret their inner workings. This, in turn, can refine our thinking.
 
 To learn more, read the `whitebox-ai.pdf` presentation file. It also has a list of suggested reading material.
 
@@ -38,9 +38,11 @@ At our disposal, is a dataset of (approximately) 2s recordings of chimpanzees wh
 - Food Grunt
 - Pant Grunt
 
-The files are in the folder, `/net/projects/scratch/winter/valid_until_31_July_2021/0-animal-communication/data_grid/Chimp_IvoryCoast/detector_train_ds_spec/` on the grid (the grid is explained in the infrastructure section), and which of the above mentioned _calls_ they contain is mentioned in the file `labelsfromfilename` in this repository.
+The .spec files are in the folder, `/net/projects/scratch/winter/valid_until_31_July_2021/0-animal-communication/data_grid/Chimp_IvoryCoast/detector_train_ds_spec/` on the grid (the grid is explained in the infrastructure section), and which of the above mentioned _calls_ they contain is mentioned in the file `labelsfromfilename` in this repository.
+Those .spec files were originally produced during training the detector, using a pipeline built for killer whale detection (i.e. orcaspot by Bergler et al. (2019)). The team is working on a stand-alone module to prepare the .spec of new audio files for autoencoders.
 
-The contents of the file are also embedded in the filename, the contents were manually verified by Rachael.
+The contents of the file (i.e. call types) are also embedded in the filename. The labels of the call types were manually annotated by Dr. Ammie Kalan from EVA and the 2s snippets were automatically extracted and manually verified (at noises vs. call level) by Rachael from SP.
+
 
 ### The Plan
 
@@ -53,6 +55,7 @@ The contents of the file are also embedded in the filename, the contents were ma
 7. Compare the cluster assignment with the label assignment done by the human beings
     1. If they are similar, the model works and has the same discrimination ability as a person. Now test it on unseen/new/novel data.
     2. If they are not similar, you need reevaluate you approach and try again (or quit)
+    3. If there some are consistent with human annotations while others don't fit, it would also be a good opportunity to revisit the spectrograms & .wav of those seemingly outliers, together with reexamining the original call type definitions.
 
 ![plan-visualization](images/plan.png)
 
@@ -62,7 +65,8 @@ The experiments are run on the _grid_. The grid is a technical term for a collec
 
 ### The Code
 
-The most important file is the `pipeline.py` file. It is the pipeline through which your data goes and outputs a trained model, downsampled audio of chimpanzees and clusters this downsampled information.
+The most important file is the `pipeline.py` file. It is the pipeline through which your data goes and outputs a trained model, downsampled calls of chimpanzees and clusters this downsampled information.
+Pytorch is used.
 
 The code is thoroughly commented, if you still don't get it, email me.
 
