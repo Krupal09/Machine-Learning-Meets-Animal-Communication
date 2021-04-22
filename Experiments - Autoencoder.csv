@@ -1,0 +1,523 @@
+Job ID,File Name,Submission Plan,Submission Date & Time,State of the job,Memory,Batch Size,Epochs,"Learning
+Rate",Loss Function,Architecture,Output,Error,model - saved,Notes
+644152,aru-ae-2s.py,killed,02/26/2021 21:02:10,-,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 3
+Decoder : Reverse of encoder",,,,added flush() in new job
+644169,aru-ae-2s-B64.py,killed,02/26/2021 22:48:10,-,8G,64,20,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 3
+Decoder : Reverse of encoder",,,,added flush() in new job
+644170,aru-ae-2s-B128.py,killed,02/26/2021 22:48:25,-,8G,128,20,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 3
+Decoder : Reverse of encoder",,,,added flush() in new job
+644365,aru-ae-2s.py,killed by grid,02/27/2021 15:53:10,-,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 3
+Decoder : Reverse of encoder",,,,
+644637,aru-ae-2s.py,Done,02/28/2021 15:15:01,Killed at 13:13 on 2-Mar-2021,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 3
+Decoder : Reverse of encoder","epoch : 1/20, recon loss = 0.00011208
+epoch : 2/20, recon loss = 0.00011061
+epoch : 3/20, recon loss = 0.00011061
+epoch : 4/20, recon loss = 0.00011061
+epoch : 5/20, recon loss = 0.00011061
+epoch : 6/20, recon loss = 0.00011061
+epoch : 7/20, recon loss = 0.00011061
+epoch : 8/20, recon loss = 0.00011061
+epoch : 9/20, recon loss = 0.00011061
+epoch : 10/20, recon loss = 0.00011061
+epoch : 11/20, recon loss = 0.00011061
+epoch : 12/20, recon loss = 0.00011061",,,
+644638,aru-ae-2s-B64.py,Done,02/28/2021 15:15:01,Killed at 1:13 PM on 2-Mar-2021,8G,64,20,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 3
+Decoder : Reverse of encoder","epoch : 1/20, recon loss = 0.00011809
+epoch : 2/20, recon loss = 0.00021774
+epoch : 3/20, recon loss = 0.00011061
+epoch : 4/20, recon loss = 0.00011061
+epoch : 5/20, recon loss = 0.00011061
+epoch : 6/20, recon loss = 0.00011061
+epoch : 7/20, recon loss = 0.00011061
+epoch : 8/20, recon loss = 0.00011061
+epoch : 9/20, recon loss = 0.00011061
+epoch : 10/20, recon loss = 0.00011061
+epoch : 11/20, recon loss = 0.00011061
+epoch : 12/20, recon loss = 0.00011061",,,
+644639,aru-ae-2s-B128.py,Done,02/28/2021 15:15:01,Killed at 1:13 PM on 2-Mar-2021,8G,128,20,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 3
+Decoder : Reverse of encoder","epoch : 1/20, recon loss = 0.00011365
+epoch : 2/20, recon loss = 0.00011061
+epoch : 3/20, recon loss = 0.00011061
+epoch : 4/20, recon loss = 0.00011061
+epoch : 5/20, recon loss = 0.00011061
+epoch : 6/20, recon loss = 0.00011061
+epoch : 7/20, recon loss = 0.00011061
+epoch : 8/20, recon loss = 0.00011061
+epoch : 9/20, recon loss = 0.00011061
+epoch : 10/20, recon loss = 0.00011061
+epoch : 11/20, recon loss = 0.00011061",,,
+645104,-,Yet to submit,-,-,8G,32,20,1e-1,"Categorical
+Cross
+Entropy","Encoder : 194 * 257, 100, 64, 12, 3
+Decoder : Reverse of encoder",RuntimeError: all elements of input should be between 0 and 1,"#BCE - Binary Cross Entropy - categorical cross entropy loss
+criterion = nn.BCELoss()
+
+- Our data are normalized - I am not sure why it isn't between 0 and 1",,
+645133,aru-ae-2s-arc1006412-7.py,Stopped,03/02/2021 15:43:10,running at 15:37 on 4-Mar-2021,8G,32,20,1e-1,MSE/CCE - whichever is better,"Encoder : 194 * 257, 100, 64, 12, 7
+Decoder : Reverse of encoder","epoch : 1/20, recon loss = 0.00011126
+epoch : 2/20, recon loss = 0.00011061
+epoch : 3/20, recon loss = 0.00011061",,,
+645137,aru-ae-2s-arc1006412-6.py,Stopped,03/03/2021 15:43:10,running at 15:37 on 4-Mar-2021,8G,32,20,1e-1,MSE/CCE,"Encoder : 194 * 257, 100, 64, 12, 6
+Decoder : Reverse of encoder","epoch : 1/20, recon loss = 0.00011253
+epoch : 2/20, recon loss = 0.00011061
+epoch : 3/20, recon loss = 0.00011061",,,
+645135,aru-ae-2s-arc1006412-5.py,Stopped,03/04/2021 15:43:10,running at 15:37 on 4-Mar-2021,8G,32,20,1e-1,MSE/CCE,"Encoder : 194 * 257, 100, 64, 12, 5
+Decoder : Reverse of encoder","epoch : 1/20, recon loss = 0.00011157
+epoch : 2/20, recon loss = 0.00011061
+epoch : 3/20, recon loss = 0.00011061",,,
+645188,aru-ae-2s-arc1006412-4.py,Stopped,03/02/2021 21:30:10,running at 15:37 on 4-Mar-2021,8G,32,20,1e-1,MSE/CCE,"Encoder : 194 * 257, 100, 64, 12, 4
+Decoder : Reverse of encoder",,,,
+645781,aru-ae-2s-arc1006438123.py,Stopped,03/04/2021 21:02:55,03/04/2021 21:02:55,8G,32,20,1e-1,MSE/CCE,"Encoder : 194 * 257, 100, 64, 38, 12, 7/6/5/4/3
+Decoder : Reverse of encoder","epoch : 1/20, recon loss = 0.00011151
+epoch : 2/20, recon loss = 0.00011061",,,
+645783,aru-ae-2s-arc100826438123.py,Stopped,03/04/2021 21:02:55,03/04/2021 21:02:55,8G,32,20,1e-1,MSE/CCE,"Encoder : 194 * 257, 100, 82, 64, 38, 12, 7/6/5/4/3
+Decoder : Reverse of encoder","epoch : 1/20, recon loss = 0.00012332
+epoch : 2/20, recon loss = 0.00011061",,,
+645829,aru-ae-2s-arc64123.py,"killed by grid
+After one epoch",03/05/2021 0:16:25,-,8G,32,20,1e-1,MSE/CCE,"Encoder : 194 * 257, 64, 12, 3
+Decoder : Reverse of encoder","epoch : 1/20, recon loss = 0.00011386",,,
+645914,aru-ae-2s-arc64123.py,"killed by grid
+After one epoch",03/05/2021 6:19:10,-,8G,32,20,1e-1,MSE/CCE,"Encoder : 194 * 257, 64, 12, 3
+Decoder : Reverse of encoder","epoch : 1/20, recon loss = 0.00029217",,,
+645998,aru-ae-2s-arc64123.py,Running,03/05/2021 13:19:40,03/05/2021 17:30:00,8G,32,20,1e-1,MSE/CCE,"Encoder : 194 * 257, 64, 12, 3
+Decoder : Reverse of encoder","epoch : 1/20, recon loss = 0.00012183",,,
+646012,aru-ae-2s-arc38123.py,Running,03/05/2021 14:30:55,03/05/2021 17:30:00,8G,32,20,1e-1,MSE/CCE,"Encoder : 194 * 257, 38, 12, 3
+Decoder : Reverse of encoder","epoch : 1/20, recon loss = 0.00012563",,,
+646013,aru-ae-2s-arc123.py,Running,03/05/2021 14:30:55,03/05/2021 17:30:00,8G,32,20,1e-1,MSE/CCE,"Encoder : 194 * 257, 12, 3
+Decoder : Reverse of encoder","epoch : 1/20, recon loss = 0.00024688
+epoch : 2/20, recon loss = 0.00011060
+epoch : 3/20, recon loss = 0.00011061
+epoch : 4/20, recon loss = 0.00011061",,,
+,,Yet to submit,,,8G,32,20,1e-1,MSE/CCE,"Encoder : 194 * 257, 100, 64, 38, 38, 12, 7/6/5/4/3
+Decoder : Reverse of encoder",,Repeated layers don't make sense mathematically,,
+,,Yet to submit,,,8G,32,20,1e-1,MSE/CCE,"Encoder : 194 * 257, 100, 64, 64, 38, 12, 7/6/5/4/3
+Decoder : Reverse of encoder",,Repeated layers don't make sense mathematically,,
+644638,2s-64.py,,started at 3:15 PM,running at 4 PM,,,,,MSE + LeakyReLU,,,,,leadyrelu
+644639,2s-B128.py,,,,,,,,MSE + Sigmoid,,, ,,Sigmoid at the bottleneck layer
+645713,aru-ae-2s-chng1.py,Stopped,03/04/2021 15:37:10,03/04/2021 21:02:55,8G,32,20,1e-1,MSE + ReLU,"Encoder : 194 * 257, 100, 64, 12, 3
+Decoder : Reverse of encoder","epoch : 1/20, recon loss = 0.00011141
+epoch : 2/20, recon loss = 0.00011061
+epoch : 3/20, recon loss = 0.00011061",,,Applied ReLU at the bottleneck layer for encoder
+,,,,,,,,,,,,,,
+,generatefeatures.py,,,,,,,,,,,,,
+646224,generatefeatures.py,,,,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 3
+Decoder : Reverse of encoder",,NVIDIA GPU error,,10064123
+646255,generatefeatures-arch10064123.py,,,,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 3
+Decoder : Reverse of encoder",,,,10064123
+646256,generatefeatures-arch10064124.py,,,,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 4
+Decoder : Reverse of encoder",,,,10064124
+646250,generatefeatures-arch10064125.py,,,,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 5
+Decoder : Reverse of encoder",,,,10064125
+646251,generatefeatures-arch10064126.py,,,,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 6
+Decoder : Reverse of encoder",,,,10064126
+646290,generatefeatures-arch10064127.py,,Killed with no reason !,,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 7
+Decoder : Reverse of encoder",,Error file is empty,,10064127
+646293,generatefeatures-arch10064127.py,,Killed with no reason !,,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 7
+Decoder : Reverse of encoder",,Error file is empty,,10064127
+646307,generatefeatures-arch10064127.py,,2GB memory,,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 7
+Decoder : Reverse of encoder",,,,10064127
+,generatefeatures-arch1006438123.py,,,,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 38, 12, 3
+Decoder : Reverse of encoder",,,,1006438123
+,generatefeatures-arch1006438127.py,,,,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 38, 12, 7
+Decoder : Reverse of encoder",,,,1006438127
+,generatefeatures-arch100826438123.py,,,,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 100, 82, 64, 38, 12, 3
+Decoder : Reverse of encoder",,,,100826438123
+,generatefeatures-arch100826438127.py,,,,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 100, 82, 64, 38, 12, 7
+Decoder : Reverse of encoder",,,,100826438127
+646274,generatefeatures-arch64123.py,,,,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 64, 12, 3
+Decoder : Reverse of encoder",,,,64123
+646261,generatefeatures-arch38123.py,,,,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 38, 12, 3
+Decoder : Reverse of encoder",,,,38123
+646275,generatefeatures-arch123.py,,,,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 12, 3
+Decoder : Reverse of encoder",,,,123
+,,,,,,,,,,,,,,
+,After saving models,,,,,,,,,,,,,
+646315,aru-ae-2s.py,killed by the grid,,,8G,32,2,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 3
+Decoder : Reverse of encoder",,,,
+646318,aru-ae-2s-arc1006412-7.py,killed by the grid,,,8G,32,2,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 7
+Decoder : Reverse of encoder",,,,
+646399,aru-ae-2s-arc1006412-7.py,completed - errorneous,"7n
+generatefeatures-arch10064127.py
+646464",,8G,32,2,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 7
+Decoder : Reverse of encoder","epoch : 1/2, recon loss = 0.00011207
+epoch : 2/2, recon loss = 0.00011061",,,had just 3 neurons instead of 7
+646399,aru-ae-2s-arc1006412-7.py,completed,"7n
+generatefeatures-arch10064127.py
+646722",,8G,32,2,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 7
+Decoder : Reverse of encoder","epoch : 1/2, recon loss = 0.00011207
+epoch : 2/2, recon loss = 0.00011061",,,
+646332,aru-ae-2s-arc1006412-6.py,killed by the grid,-,,8G,32,2,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 6
+Decoder : Reverse of encoder",,,,
+646400,aru-ae-2s-arc1006412-6.py,completed,"6n
+646474
+generatefeatures-arch10064126.py",,8G,32,2,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 6
+Decoder : Reverse of encoder","epoch : 1/2, recon loss = 0.00011487
+epoch : 2/2, recon loss = 0.00011061",,,
+,aru-ae-2s-arc1006412-6.py,completed,"10064126
+646723
+generatefeatures-arch10064126.py",,8G,32,2,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 6
+Decoder : Reverse of encoder","epoch : 1/2, recon loss = 0.00011487
+epoch : 2/2, recon loss = 0.00011061",,,
+646333 ,aru-ae-2s-arc1006412-5.py,killed by the grid,-,,8G,32,2,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 5
+Decoder : Reverse of encoder",,,,
+646402,aru-ae-2s-arc1006412-5.py,completed,"10064125n
+646478
+646480",,8G,32,2,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 5
+Decoder : Reverse of encoder","epoch : 1/2, recon loss = 0.00011160
+epoch : 2/2, recon loss = 0.00011061",,,
+646334,aru-ae-2s-arc1006412-4.py,killed by the grid,-,,8G,32,2,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 4
+Decoder : Reverse of encoder",,,,
+646403,aru-ae-2s-arc1006412-4.py,killed by the grid,,,8G,32,2,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 4
+Decoder : Reverse of encoder",Jobs are always getting killed on ramsauer.ikw.uni-osnabru machine,,,
+,aru-ae-2s-arc1006412-4.py,,,,8G,32,2,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 4
+Decoder : Reverse of encoder",,,,
+646338,aru-ae-2s-arc1006438123.py,completed,"1006438123n
+646390
+features-arch1006438123",646389,8G,32,2,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 38, 12, 7/6/5/4/3
+Decoder : Reverse of encoder",,,,
+646339,aru-ae-2s-arc100826438123.py,completed,100826438123n,,8G,32,2,1e-1,MSE,"Encoder : 194 * 257, 100, 82, 64, 38, 12, 7/6/5/4/3
+Decoder : Reverse of encoder",,,100826438123n,
+646325,aru-ae-2s-arc64123.py,"killed by the grid
+after one epoch",,,8G,32,2,1e-1,MSE,"Encoder : 194 * 257, 64, 12, 3
+Decoder : Reverse of encoder",,,"Got killed even after one epoch !
+epoch : 1/2, recon loss = 0.00011796",
+646486,aru-ae-2s-arc64123.py,running,,,8G,32,2,1e-1,MSE,"Encoder : 194 * 257, 64, 12, 3
+Decoder : Reverse of encoder",,,,
+646329,aru-ae-2s-arc38123.py,"killed by the grid
+after one epoch",,,8G,32,2,1e-1,MSE,"Encoder : 194 * 257, 38, 12, 3
+Decoder : Reverse of encoder",,,,
+646487,aru-ae-2s-arc38123.py,running but scheduled for ramsauer,,,8G,32,2,1e-1,MSE,"Encoder : 194 * 257, 38, 12, 3
+Decoder : Reverse of encoder",,,,
+646331,aru-ae-2s-arc123.py,completed,"123n
+646394",,8G,32,3,1e-1,MSE,"Encoder : 194 * 257, 12, 3
+Decoder : Reverse of encoder",,,123n,
+646353,aru-ae-2s-arc123-spec-ex.py,completed,123nspecex,,2G,32,3,1e-1,MSE,"Encoder : 194 * 257, 12, 3
+Decoder : Reverse of encoder","epoch : 1/3, recon loss = 0.19431904
+epoch : 2/3, recon loss = 0.22108757
+epoch : 3/3, recon loss = 0.01895004",,123nspecex,having just 4 spectrograms to make sure that getting model at shared folder works
+646354,aru-ae-2s-arc123-spec-ex.py,completed,123nspecexrun2,,2G,32,20,1e-1,MSE,"Encoder : 194 * 257, 12, 3
+Decoder : Reverse of encoder","epoch : 1/20, recon loss = 0.05518603
+epoch : 2/20, recon loss = 0.12629421
+epoch : 3/20, recon loss = 0.10705098
+epoch : 4/20, recon loss = 0.05883373
+epoch : 5/20, recon loss = 0.01653570
+epoch : 6/20, recon loss = 0.00636362
+epoch : 7/20, recon loss = 0.00387365
+epoch : 8/20, recon loss = 0.00402351
+epoch : 9/20, recon loss = 0.00277918
+epoch : 10/20, recon loss = 0.00143777
+epoch : 11/20, recon loss = 0.00101896
+epoch : 12/20, recon loss = 0.00104756
+epoch : 13/20, recon loss = 0.00085158
+epoch : 14/20, recon loss = 0.00050925
+epoch : 15/20, recon loss = 0.00033162
+epoch : 16/20, recon loss = 0.00029883
+epoch : 17/20, recon loss = 0.00024771
+epoch : 18/20, recon loss = 0.00016447
+epoch : 19/20, recon loss = 0.00011315
+epoch : 20/20, recon loss = 0.00009454",,123nspecexrun2,Conclusion : The script is working fine and the loss convergence of 0.00011061 which we could see all the time shouldn't be a point to worry about.
+,,,,,,,,,,,,,,
+,Clustering,,,,,,,,,,,,,
+,/net/projects/scratch/winter/valid_until_31_July_2021/0-animal-communication/autoencoder/krupal,,,,,,,,,,,,,
+,,features-arch10064125,,,,,,,,,,,,
+,,features-arch10064126,,,,,,,,,,,,
+646693,clustering-kmeans-arch10064127-c6.py,features-arch10064127,,,,,,,,"Encoder : 194 * 257, 100, 64, 12, 7
+Clusters : 6",labeledfeatures-arch10064127-c6,,,
+646708,clustering-kmeans-arch10064127-c7.py,features-arch10064127,,,,,,,,"Encoder : 194 * 257, 100, 64, 12, 7
+Clusters : 7",labeledfeatures-arch10064127-c7,,,"filename,bottleneck1,bottleneck2,bottleneck3,bottleneck4,bottleneck5,bottleneck6,bottleneck7"
+,,features-arch1006438123,,,,,,,,,,,,
+,clustering-kmeans-arch123-c6.py,features-arch123,Completed,,,,,,,"Encoder : 194 * 257, 12, 3
+Clusters : 6",labeledfeatures-arch123-c6,,,
+,clustering-kmeans-arch123-c7.py,features-arch123,Completed,,,,,,,"Encoder : 194 * 257, 12, 3
+Clusters : 7",labeledfeatures-arch123-c7,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,Run on 4K files,Training model,,,,,,,,,,,,
+,/net/projects/scratch/winter/valid_until_31_July_2021/0-animal-communication/autoencoder/labeledcalls,,,,,,,,,,,,,
+646769,aru-ae-2s.py,completed,"saved model : 10064123
+generatefeatures-arch10064123.py
+646791",,8G,32,2,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 3
+Decoder : Reverse of encoder",,,,
+646799,aru-ae-2s-arc1006412-7.py,running,"saved model : 10064127
+generatefeatures-arch10064127.py",,8G,32,2,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 7
+Decoder : Reverse of encoder","epoch : 1/2, recon loss = 0.00011165
+epoch : 2/2, recon loss = 0.00010586",,,
+646812,aru-ae-2s-arc1006412-7.py,running,"saved model : 10064127
+generatefeatures-arch10064127.py",,8G,32,2,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 7
+Decoder : Reverse of encoder","epoch : 1/2, recon loss = 0.00011165
+epoch : 2/2, recon loss = 0.00010586",,,
+646756,aru-ae-2s-arc1006412-6.py,completed,"saved model : 10064126
+generatefeatures-arch10064126.py",,8G,32,2,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 6
+Decoder : Reverse of encoder","epoch : 1/2, recon loss = 0.00010976
+epoch : 2/2, recon loss = 0.00010586",,,
+,aru-ae-2s-arc1006412-5.py,,,,8G,32,2,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 5
+Decoder : Reverse of encoder",,,,
+,aru-ae-2s-arc1006412-4.py,,,,8G,32,2,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 4
+Decoder : Reverse of encoder",,,,
+646389,aru-ae-2s-arc1006438123.py,,,,8G,32,2,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 38, 12, 7/6/5/4/3
+Decoder : Reverse of encoder",,,,
+,aru-ae-2s-arc100826438123.py,,,,8G,32,2,1e-1,MSE,"Encoder : 194 * 257, 100, 82, 64, 38, 12, 7/6/5/4/3
+Decoder : Reverse of encoder",,,,
+,aru-ae-2s-arc64123.py,,,,8G,32,2,1e-1,MSE,"Encoder : 194 * 257, 64, 12, 3
+Decoder : Reverse of encoder",,,,
+,aru-ae-2s-arc38123.py,,,,8G,32,2,1e-1,MSE,"Encoder : 194 * 257, 38, 12, 3
+Decoder : Reverse of encoder",,,,
+646776,aru-ae-2s-arc123.py,completed,123n,,8G,32,3,1e-1,MSE,"Encoder : 194 * 257, 12, 3
+Decoder : Reverse of encoder",,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,/net/projects/scratch/winter/valid_until_31_July_2021/0-animal-communication/autoencoder/labeledcalls/,,,,,,,,,,,,,
+,/net/projects/scratch/winter/valid_until_31_July_2021/0-animal-communication/autoencoder/krupal/runon4kfiles/,,,,,,,,,,,,,
+,generatefeatures.py,,,,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 3
+Decoder : Reverse of encoder",,,,10064123
+646791,generatefeatures-arch10064123.py,completed,saved model : 10064123,,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 3
+Decoder : Reverse of encoder",,,,10064123
+,generatefeatures-arch10064124.py,,,,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 4
+Decoder : Reverse of encoder",,,,10064124
+,generatefeatures-arch10064125.py,,,,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 5
+Decoder : Reverse of encoder",,,,10064125
+646796,generatefeatures-arch10064126.py,completed,saved model : 10064126,,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 6
+Decoder : Reverse of encoder",,,,10064126
+646797,generatefeatures-arch10064127.py,completed,saved model : 10064127,,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 12, 7
+Decoder : Reverse of encoder",,,,10064127
+,generatefeatures-arch1006438123.py,,,,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 38, 12, 3
+Decoder : Reverse of encoder",,,,1006438123
+,generatefeatures-arch1006438127.py,,,,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 100, 64, 38, 12, 7
+Decoder : Reverse of encoder",,,,1006438127
+,generatefeatures-arch100826438123.py,,,,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 100, 82, 64, 38, 12, 3
+Decoder : Reverse of encoder",,,,100826438123
+,generatefeatures-arch100826438127.py,,,,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 100, 82, 64, 38, 12, 7
+Decoder : Reverse of encoder",,,,100826438127
+,generatefeatures-arch64123.py,,,,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 64, 12, 3
+Decoder : Reverse of encoder",,,,64123
+,generatefeatures-arch38123.py,,,,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 38, 12, 3
+Decoder : Reverse of encoder",,,,38123
+646801,generatefeatures-arch123.py,completed,saved model : 123n,,8G,32,20,1e-1,MSE,"Encoder : 194 * 257, 12, 3
+Decoder : Reverse of encoder",,,,123
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,Clustering,,,,,,,,,,,,,
+,/net/projects/scratch/winter/valid_until_31_July_2021/0-animal-communication/autoencoder/krupal/runon4kfiles,,,,,,,,,,,,,
+,,features-arch10064125,,,,,,,,,,,,
+,,features-arch10064126,,,,,,,,,,,,
+646804,clustering-kmeans-arch10064127-c6.py,features-arch10064127,,,,,,,,"Encoder : 194 * 257, 100, 64, 12, 7
+Clusters : 6",labeledfeatures-arch10064127-c6,,0    3619,"0, 1, 2, 3, ... and so on represents cluster numbers here"
+646805,clustering-kmeans-arch10064127-c7.py,features-arch10064127,,,,,,,,"Encoder : 194 * 257, 100, 64, 12, 7
+Clusters : 7",labeledfeatures-arch10064127-c7,,0    3619,
+,,features-arch1006438123,,,,,,,,,,,,
+646806,clustering-kmeans-arch123-c6.py,features-arch123,Completed,,,,,,,"Encoder : 194 * 257, 12, 3
+Clusters : 6",labeledfeatures-arch123-c6,,"4    2216
+0    1898
+2    1430
+1     908
+5     504
+3     282
+----------
+Total 7238","Original : 
+3968 | Total Number of Labelled Calls
+3832 | PH
+2344 | SM
+1762 | TB
+0029 | AB
+0025 | GR
+0001 | FG
+0024 | PG"
+646807,clustering-kmeans-arch123-c7.py,features-arch123,Completed,,,,,,,"Encoder : 194 * 257, 12, 3
+Clusters : 7",labeledfeatures-arch123-c7,,"5    1776
+1    1644
+2    1338
+3    1180
+0     692
+6     420
+4     188
+----------
+Total 7238","Original : 
+3968 | Total Number of Labelled Calls
+3832 | PH
+2344 | SM
+1762 | TB
+0029 | AB
+0025 | GR
+0001 | FG
+0024 | PG"
+,,,,,,,,,,,,,,
+,"Original Data size - In output column
+(Calculated using pandas)",,,,,,,,,,,,"5    1776
+1    1644
+2    1338
+3    1180
+0     692
+6     420
+4     188","3832 | PH
+2344 | SM
+1762 | TB
+0029 | AB
+0025 | GR
+0001 | FG
+0024 | PG"
+,,,,,,,,,,,,,,
+,pipeline.py,,,,,,,,,,,,,
+648885,pipeline.py,,,,,,,,,,Got killed for the same reason we were getting earlier - at line #41 ...,,,
+648913,pipeline.py,Error post 1 epoch,15-Mar-2021,,,,,,,,1 epoch ran fine,Error at s=uniform(....) because we didn't add from numpy import random,,
+649004,pipeline.py,-,16-Mar-2021 at ~8:10 AM,Running at 8:16 AM,,,,,,,,,,
+650557,pipeline.py,terminated,,,,,,,,,,,,went to ramsauer machine
+650560,pipeline.py,Error,-,,,,,,,,,,,"corrected by putting ""random."" in front of ""uniform(0, len(data))"""
+650884,pipeline.py,Ended without reason,03/24/2021 15:54:06,Running at 03/24/2021 15:54:06,,,,,,,ended with no reason !,,,
+650886,pipeline.py,,,,,,,,,,,,,
+650893,pipeline.py,Error,03/24/2021 16:31:21,,,,,,,,CUDA error - enabled CPU line for next 2 runs,,,
+650907,pipeline.py,Running,03/24/2021 22:02:51,Running at 22:33,,,,,,,commented cuda line and chose CPU,,,8GB RAM
+650909,pipeline.py,Running,03/24/2021 22:05:36,Running at 22:33,,,,,,,commented cuda line and chose CPU,,,16GB RAM
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,Hunaid's pipeline run - 1,,,,,,,,,"autoencoder(
+ (encoder): Sequential(
+   (0): Linear(in_features=49858, out_features=3000, bias=True)
+   (1): ReLU(inplace=True)
+   (2): Linear(in_features=3000, out_features=500, bias=True)
+   (3): ReLU(inplace=True)
+   (4): Linear(in_features=500, out_features=50, bias=True)
+   (5): ReLU(inplace=True)
+   (6): Linear(in_features=50, out_features=15, bias=True)
+ )",,,Grid - common workspace - autoencoder shared folder - 25Mar2021-1808,
+,Hunaid's pipeline run - 2,,,,,,,,,"autoencoder(
+ (encoder): Sequential(
+   (0): Linear(in_features=49858, out_features=3000, bias=True)
+   (1): ReLU(inplace=True)
+   (2): Linear(in_features=3000, out_features=500, bias=True)
+   (3): ReLU(inplace=True)
+   (4): Linear(in_features=500, out_features=50, bias=True)
+   (5): ReLU(inplace=True)
+   (6): Linear(in_features=50, out_features=5, bias=True)
+ )",,,Grid - common workspace - autoencoder shared folder - 25Mar2021-1742,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+658405,pipeline.py,Memory issed !,03/31/2021 17:58:06,Grid killed it,,,,,,"self.encoder = nn.Sequential(
+            nn.Linear(194 * 257, 25000),
+            nn.ReLU(True),
+            nn.Linear(25000, 3000),
+            nn.ReLU(True),
+            nn.Linear(3000, 500),
+            nn.ReLU(True),
+            nn.Linear(500, 50),
+            nn.ReLU(True),
+            nn.Linear(50, nbottleneck))
+----------
+nbottleneck = 7
+",,"Asked for 16 GB and got below message :
+----------------------------------
+Job killed after exceeding memory limits
+/var/lib/gridengine/util/starter.sh: line 41: 115876 Killed                  /usr/bin/cgexec -g freezer,memory,cpuset:${CGPATH} $@",,
+658410,pipeline.py,Memory issed !,03/31/2021 18:04:06,Grid killed it,,,,,,"self.encoder = nn.Sequential(
+            nn.Linear(194 * 257, 25000),
+            nn.ReLU(True),
+            nn.Linear(25000, 3000),
+            nn.ReLU(True),
+            nn.Linear(3000, 500),
+            nn.ReLU(True),
+            nn.Linear(500, 50),
+            nn.ReLU(True),
+            nn.Linear(50, nbottleneck))
+----------
+nbottleneck = 7
+",,"Asked for 30 GB and got below message :
+----------------------------------
+Job killed after exceeding memory limits
+/var/lib/gridengine/util/starter.sh: line 41: 115876 Killed                  /usr/bin/cgexec -g freezer,memory,cpuset:${CGPATH} $@",,
+658573,pipeline.py,Memory issed !,03/31/2021 21:42:21,Grid killed it,,,,,,"self.encoder = nn.Sequential(
+            nn.Linear(194 * 257, 25000),
+            nn.ReLU(True),
+            nn.Linear(25000, 3000),
+            nn.ReLU(True),
+            nn.Linear(3000, 500),
+            nn.ReLU(True),
+            nn.Linear(500, 50),
+            nn.ReLU(True),
+            nn.Linear(50, nbottleneck))
+----------
+nbottleneck = 7",,"Job killed after exceeding memory limits
+/var/lib/gridengine/util/starter.sh: line 41: 23576 Killed                  /usr/bin/cgexec -g freezer,memory,cpuset:${CGPATH} $@",,
+658581,pipeline.py,,03/31/2021 21:47:51,Ran for quite good time and then got killed because of memory issue !!!!,,,,,,"self.encoder = nn.Sequential(
+            nn.Linear(194 * 257, 3000),
+            nn.ReLU(True),
+            nn.Linear(3000, 500),
+            nn.ReLU(True),
+            nn.Linear(500, 50),
+            nn.ReLU(True),
+            nn.Linear(50, nbottleneck))  
+----------
+nbottleneck = 7",,"/var/lib/gridengine/util/starter.sh: line 41:  2803 Killed                  /usr/bin/cgexec -g freezer,memory,cpuset:${CGPATH} $@",,Asked for 30 GB RAM and submitted with qsub -l cuda_cores=768 pipeline.py commmand
+658626,pipeline.py,,03/31/2021 22:46:36,Ran for quite good time and then got killed because of memory issue !!!!,,,,,,"self.encoder = nn.Sequential(
+            nn.Linear(194 * 257, 1000),
+            nn.ReLU(True),
+            nn.Linear(1000, 500),
+            nn.ReLU(True),
+            nn.Linear(500, 50),
+            nn.ReLU(True),
+            nn.Linear(50, nbottleneck))  
+----------
+nbottleneck = 7",,"/var/lib/gridengine/util/starter.sh: line 41:  2803 Killed                  /usr/bin/cgexec -g freezer,memory,cpuset:${CGPATH} $@",,
+,,,,,,,,,,,,,,
+,"Runnning clustering method GMM for the features generated on 25Mar2021-1742
+The features are in the autoencoder folder under the directory ""25Mar2021-1742""",,,,,,,,,,,,,
+665279,cluster-gmm.py,04/19/2021 15:01:06,,,,,,,,,,file name error,,
+665280,cluster-gmm.py,4/19/2021 ~15:07,,,,,,,,,,,,
+665282,cluster-gmm.py,04/19/2021 15:34:51,,,,,,,,,,"color='species'
+color for cluster points in the plot",,
+665282,cluster-gmm.py,04/19/2021 15:34:51,,,,,,,,,,"ValueError: 'color' kwarg must be an color or sequence of color specs.
+For a sequence of values to be color-mapped, use the 'c' argument instead
+",,
+665286,cluster-gmm.py,04/19/2021 15:49:36,,,,,,,,,,,,
+665287,cluster-gmm.py,04/19/2021 16:04:36,,,,,,,,,,,,
+-,cluster-gmm.py,,,,,,,,,,,,,"tried ax.scatter3D(clustering.predict(data),...) and
+ax.scatter3D(data,...)"
+665297,cluster-gmm.py,04/19/2021 21:26:36,,,,,,,,,"Type of clustering.gmm(data) :
+<class 'numpy.ndarray'>",,,"printing type of clustering.gmm(data)
+because I am getting an error to print data along with their mean value that object type can't be printed"
+665298,cluster-gmm.py,04/19/2021 21:35:36,,,,,,,,,,,,
+665299,cluster-gmm.py,,,,,,,,,,"Mean values of 5 bottleneck units for 7 different clusters:
+[[  -9000.31430643  -35225.4350442    35164.95237912  -21332.76121539
+   -14281.41697896]
+ [ -34267.71314614 -134315.11401643  134084.1980313   -81349.54669006
+   -54395.00943258]
+ [ -20111.18745922  -78768.22868206   78632.98058039  -47705.32743707
+   -31917.07578233]
+ [ -26613.85800811 -104270.15267879  104091.03476401  -63151.1099507
+   -42240.88477771]
+ [ -46236.62326245 -181286.19081735  180974.33119128 -109799.1884298
+   -73400.69879941]
+ [  -3477.34216258  -13233.02802133   13211.39386365   -7997.69675603
+    -5483.88936107]
+ [ -15067.65104312  -58993.65004337   58892.40334658  -35728.25509259
+   -23910.74929381]]",,,
+665300,cluster-gmm.py,04/19/2021 21:51:36,,,,,,,,,,,,
+665302,cluster-gmm.py,04/19/2021 21:57:36,,,,,,,,,,,,"ax.scatter3D(points[:], points[:], points[],"
+665305,cluster-gmm.py,04/19/2021 22:14:06,,,,,,,,,,,,"important change of : ax.scatter3D(points[:,0], points[:,1], points[:,2], ...) to
+ax.scatter3D(points[:,0], points[:,1], points[:,2], points[:,3], points[:,4] because there are 5 units in the bottleneck layer. Did python computation in ""ulf job work""'s helper notebook to confirm - of 7*5 we were just using 7*3"
+Multiple,cluster-gmm.py,,,,,,,,,,"shape of data- data = df[bottleneck 0-4]]:  (12468, 5)
+shape of predicted data - clustering.predict(data) :  (12468,)
+first value of predicted data - clustering.predict(data)[0] :  5
+second value of predicted data - clustering.predict(data)[0] :  5
+third value of predicted data - clustering.predict(data)[0] :  5",,,
+-,cluster-gmm.py,,,,,,,,,,"shape of data- data = df[bottleneck 0-4]]:  (12468, 5)
+shape of predicted data - clustering.predict(data) :  (12468,)
+first value of predicted data - clustering.predict(data)[1000] :  2
+second value of predicted data - clustering.predict(data)[125] :  6
+third value of predicted data - clustering.predict(data)[2324] :  5",,,
+-,cluster-gmm.py,,,,,,,,,,"type of data:  <class 'numpy.ndarray'>
+shape of data- data = df[bottleneck 0-4]]:  (12468, 5)
+first line of the data = data[0,:]  [-23447.5078125  -91767.578125    91610.375      -55576.23046875
+ -37205.12890625]
+shape of predicted data - clustering.predict(data) :  (12468,)
+first value of predicted data - clustering.predict(data)[0] :  2
+second value of predicted data - clustering.predict(data)[0] :  6
+third value of predicted data - clustering.predict(data)[0] :  5",,,
+665319,cluster-gmm.py,Worked,,,,,,,,,,,,"ax.scatter3D(data[:,0], data[:,1], data[:,2]) 
+removed color parameter as there was an error that there are 12,000+ data points but only 7 colors in the argument"
+665320,cluster-gmm.py,,,,,,,,,,,,,"ax.scatter3D(data[:,0], data[:,1], data[:,2])
+ax.scatter3D(points[:,0], points[:,1], points[:,2], color=[""red"",""black"",""blue"",""orange"",""yellow"",""green"",""grey""])"
+665321,cluster-gmm.py,,,,,,,,,,,,,"ax.scatter3D(points[:,0], points[:,1], points[:,2], color=[""red"",""black"",""blue"",""orange"",""yellow"",""green"",""grey""])
+ax.scatter3D(data[:,0], data[:,1], data[:,2])"
+"665324
+665325
+665326",cluster-gmm-new.py,,,,,,,,,,,,,"combined code from cluster-gmm.py and 
+https://scikit-learn.org/stable/auto_examples/mixture/plot_gmm.html#sphx-glr-auto-examples-mixture-plot-gmm-py"
