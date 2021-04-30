@@ -67,3 +67,6 @@ A: The quota is exceeded when you have too much content in the home (`~/`) direc
 
 A: Run `quota -s` to view your quota.
 
+**Q13: Where can I find vi editor commands ?**
+
+A: Access this link https://www.tutorialspoint.com/unix/unix-vi-editor.htm for vi commands and tutorial
