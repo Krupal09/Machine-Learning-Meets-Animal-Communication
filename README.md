@@ -1,7 +1,5 @@
-# lucidmonkeys
-
-## Animal Communication Meets Machine Learning
-## Study Project at the University of Osnabrueck, Germany
+## Machine Learning Meets Animal Communication
+## A study project at the University of Osnabrueck, Germany
 
 > To Those Who Will Come After Me,
 > 
