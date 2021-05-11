@@ -1,6 +1,18 @@
 ## Machine Learning Meets Animal Communication
 ## A study project at the University of Osnabrueck, Germany
 
+This is WP - unsupervised feature learning and clustering.
+
+It is evolved from Hunaid's Lucidmonkeys repo (https://github.com/104H/lucidmonkeys).
+
+Meanwhile, new developments (e.g. standalone preprocessing) are added and the original repo is being restructured. 
+
+As a starting point, it is important to understand how preprocessing in the current workflow, it is recommended to put the ORCA-Spot Preprocessing.pdf from Felix (could be found on slack) and the two .py files under 'data' side-by-side and read through the commented codes.
+
+Below are the old readme from Lucidmonkeys. Pls be aware that the instructed how to use the files may throw an error as we are still working on improving and streamline the pipeline. 
+----------------------------------------------------------------------------------
+
+
 > To Those Who Will Come After Me,
 > 
 > I started this study project with the vision of understanding how Deep Neural Networks work, and bridging the gap between human and artificial intelligence. The task taught me a lot, about my skills and the naivete of my vision. There is only so much I achieved, but in this repository, I have laid the groundwork of taking this vision foward.
