@@ -8,6 +8,7 @@ It is evolved from Hunaid's Lucidmonkeys repo (https://github.com/104H/lucidmonk
 Meanwhile, new developments (e.g. standalone preprocessing) are added and the original repo is being restructured. 
 
 As a starting point, it is important to understand how preprocessing in the current workflow, it is recommended to put the ORCA-Spot Preprocessing.pdf from Felix (could be found on slack) and the two .py files under 'data' side-by-side and read through the commented codes.
+The preprocessing is adapted from Orcaspot. It would also be helpful to read the publication to gain an overall understanding of the workflow (https://www.nature.com/articles/s41598-019-47335-w).
 
 Below are the old readme from Lucidmonkeys. Pls be aware that the instructed how to use the files may throw an error as we are still working on improving and streamline the pipeline. 
 ----------------------------------------------------------------------------------
