@@ -104,8 +104,8 @@ class PreEmphasize(object):
             (y[:, 0].unsqueeze(dim=-1), y[:, 1:] - self.factor * y[:, :-1]), dim=-1 # purpose: remove sharpe edges
         )
 
-# spectrogram related starts here
-"""Converts a given audio to a spectrogram (amplitude not log scaled)."""
+# spectrogram generation related starts here
+"""Converts a given audio to a (power) spectrogram (amplitude not log scaled)."""
 class Spectrogram(object):
 
 
@@ -113,7 +113,7 @@ class Spectrogram(object):
         # n_fft: resolution on freq axis
         self.n_fft = n_fft
         self.hop_length = hop_length # resolution on time axis; width of hann window/4; overlap shd add up to 1
-        # center - true: t-th frame in spectrogram is centered at time t x hop_length of the signal
+        # center - true: t-th frame in spectrogram is centered at time t x hop_length of the signal # orcaspot: center=False
         # --> create 1-to-1 correspondence
         # done by reflected padding (padding on both sides)
         self.center = center
@@ -129,7 +129,7 @@ class Spectrogram(object):
             )
         # Fourier transform: 2 inputs and 2 output dimensions (re, im).
         # For each frequency bin, the magnitude sqrt(re^2 + im^2) tells you the amplitude of the component at the corresponding frequency.
-        # amplitude/color in spectrogram: height in each FT
+        # amplitude/color in spectrogram: height in each FT (not of our interest though)
         # The phase atan2(im, re) tells you the relative phase of that component.
         # STFT sliding is similar to sliding windows of conv2D
         # n_frames = ((data_len - (win_size - 1) - 1) / hop_size) + 1
@@ -143,11 +143,12 @@ class Spectrogram(object):
             n_fft=self.n_fft,
             hop_length=self.hop_length,
             window=self.window,
-            center=self.center, # orcaspot: center=False
+            center=self.center,
             onesided=True,
-        ).transpose(1, 2) # --> (1, T, 257, 2) or (* x T x N x 2); this is complex valued STFT
+        ).transpose(1, 2) # --> (1, T, n_fft/2 + 1, 2) feature matrix or (* x T x F x 2); this is complex valued STFT
+        # e.g. n_fft = 512, feature matrix returned by stft.transpose() is (1, T, 257, 2)
         S /= self.window.pow(2).sum().sqrt() # energy is lost due to windowing, scale factor to recover energy
-        S = S.pow(2).sum(-1) # get power of "complex" tensor (--> real number) and sum along last dim, returns (1xTxN) or (1 t f)
+        S = S.pow(2).sum(-1) # get power of "complex" tensor (--> real number) and sum along last dim, returns (1xTxF) or (1 t f)
         return S
 
 
@@ -476,15 +477,18 @@ class RandomAddNoise(object):
         return spectrogram_aug
 
 """
-Samples a subsequence along one axis and pads if necessary.
-used both in RandomAddNoise() and sample signal files
+Sample a subsequence along time dimension and pads if necessary.
+inputs: (T x F)
+used both in RandomAddNoise() and sample signal files --> to give a fixed length (sequence_length) at time dimension (T),
+orcaspot: 1.28s; determined by the average length of the target signals
+returns: (sequence_length x F)
 """
 class PaddedSubsequenceSampler(object):
 
     def __init__(self, sequence_length: int, dim: int = 0, random=True):
         assert isinstance(sequence_length, int)
         assert isinstance(dim, int)
-        self.sequence_length = sequence_length
+        self.sequence_length = sequence_length # orcaspot
         self.dim = dim
         if random: # if using augmentation
             self._sampler = lambda x: torch.randint(
@@ -534,7 +538,7 @@ class PaddedSubsequenceSampler(object):
         return spectrogram
 
 """
-Frequency compression of a given frequency range into a chosen number of frequency bins.
+Frequency compression of a given frequency range into a chosen number of frequency bins (orcaspot: 256).
 used for frequency compression - linear
 """
 class Interpolate(object):
@@ -556,8 +560,8 @@ class Interpolate(object):
 
         spec.unsqueeze_(dim=0) # input shape for interpolate(): (mini-batch x channels x [optional depth] x [optional height] x width)
         # F.interpolate(): down/up samples the input to either the given size or the given scale_factor
-        # don't understand how this interpolation work
-        spec = F.interpolate(spec, size=(spec.size(2), self.n_freqs), mode="nearest") # size=(time_frames, self.n_freqs);
+        # nearest neighbor interpolation: https://en.wikipedia.org/wiki/Nearest-neighbor_interpolation
+        spec = F.interpolate(spec, size=(spec.size(2), self.n_freqs), mode="nearest") # returns: size=(time_frames, self.n_freqs) or (T, 256) in orcaspot;
         return spec.squeeze(dim=0)
 
 # Hz <-> Mel

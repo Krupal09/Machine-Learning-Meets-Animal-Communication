@@ -491,6 +491,8 @@ class Dataset(AudioDataset):
         self.f_max = f_max
 
         # mel: log transformation of freq (Hz scale to Mel scale)
+        # attention: Mel-spectrograms as a network input led to an excessive loss of resolution in higher frequency bands, which was
+        # a big problem considering the high-frequency pulsed calls and whistles.
         valid_freq_compressions = ["linear", "mel", "mfcc"]
 
         if freq_compression not in valid_freq_compressions:
@@ -599,6 +601,8 @@ class Dataset(AudioDataset):
             file = file_name
         sample = self.t_spectrogram(file)
 
+        # augmentation performed on the fly / in an embedded way, rather than generating augmented samples on hard disk
+        # input to augmentation: decibel-converted power spectrogram
         if self.augmentation:
             sample = self.t_amplitude(sample)
             sample = self.t_pitchshift(sample)
