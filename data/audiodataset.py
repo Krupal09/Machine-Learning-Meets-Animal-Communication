@@ -55,7 +55,7 @@ Get audio files from directory
 def get_audio_files_from_dir(path: str):
     # glob.glob: retrieve paths recursively from inside the directories/files and subdirectories/subfiles
     audio_files = glob.glob(os.path.join(path, "**", "*.wav"), recursive=True)
-    # Path module --> to learn
+    # Path module
     audio_files = map(lambda p: pathlib.Path(p), audio_files)
     audio_files = filter(lambda p: not p.match("*.bkp/*"), audio_files)
     base = pathlib.Path(path)
