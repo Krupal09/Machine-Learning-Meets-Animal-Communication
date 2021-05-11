@@ -1,5 +1,7 @@
+import torch.nn as nn
+
 # define model
-class autoencoder(nn.Module):
+class vanillaAutoencoder(nn.Module):
     def __init__(self):
         super(autoencoder, self).__init__()
         self.encoder = nn.Sequential(
