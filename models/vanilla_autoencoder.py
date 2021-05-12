@@ -1,9 +1,9 @@
 import torch.nn as nn
 
 # define model
-class vanillaAutoencoder(nn.Module):
+class VanillaAutoencoder(nn.Module):
     def __init__(self):
-        super(autoencoder, self).__init__()
+        super(VanillaAutoencoder, self).__init__()
         self.encoder = nn.Sequential(
             nn.Linear(194 * 257, 24929),
             nn.ReLU(True),
