@@ -220,6 +220,33 @@ def save_decod_spec(spec, epoch):
     spec = spec.view(spec.size(0), 1, 28, 28)
     save_image(spec, ARGS.decod_dir)
 
+# define plot function for visualisation
+def plot_spec(original, regen, phase, name):
+     # reshape spectrograms for plotting
+     original = original.reshape( (128, 256) )
+     regen = regen.detach().numpy().reshape( (128, 256) )
+
+     # generate the image and save it
+     # 2 subplots to plot original and regenerated spectrograms
+     fig, ax=plt.subplots(1,2)
+     fig.tight_layout()
+     ax = ax.flatten()
+
+     # plot original spectrogram
+     ax[0].matshow(original)
+     ax[0].set_title("Original")
+
+     # plot regenerated spectrogram
+     ax[1].matshow(regen)
+     ax[1].set_title("Regenerated")
+
+     # 'phase' for training/validation
+     plt_name = phase + "_" + name
+     plt.savefig(folder + "/regen-spectrograms/" + plt_name)
+     # close pyplot every time to save memory
+     plt.close()
+
+
 if __name__ == "__main__":
 
     #sys.stdout.flush()
@@ -294,6 +321,9 @@ if __name__ == "__main__":
     #batch_size = ARGS.batch_size
     epochs = ARGS.max_train_epochs
     #training_loss = []
+    # 'phase' and 'plot_count' for visualisation
+    phase = "Training"
+    plot_count = 0 
     print("training starts")
     for epoch in range(epochs):
         running_loss = 0
@@ -333,7 +363,12 @@ if __name__ == "__main__":
             # the value of total cost averaged across all training examples of the current batch
             # loss.item()*data.size(0): total loss of the current batch (not averaged).
             running_loss += train_loss.item() * specs.size(0)
-
+            
+            # visualise some spectrograms during training
+            if epoch == epochs-1 and plot_count <= 10:
+                name = str(plot_count) # later, change it to file name
+                plot_spec(specs, outputs, phase, name)
+        
         # compute the epoch training loss
         loss = running_loss / len(audio_files)
 
@@ -347,40 +382,45 @@ if __name__ == "__main__":
 
     torch.save(model.state_dict(), ARGS.model_dir)
 
-    # visualize regenerated samples
+    # visualize regenerated samples during validation
     os.mkdir("regen-spectrograms")
+    phase = "Validation"
     nsamples = 15
 
     for sample in range(nsamples):
         s = int( np.round( random.uniform(0, len(data)) ) )
 
-        spectrogram = data[s]["spectrogram"]
+        #spectrogram = data[s]["spectrogram"]
 
         # if the spectrogram is not of width 194 units, don't run the iteration
-        if spectrogram.shape[1] != 194:
-            continue
+        #if spectrogram.shape[1] != 194:
+            #continue
 
-        norm = np.linalg.norm(spectrogram)
-        snippet = spectrogram / norm
-        snippet = torch.reshape( snippet, (-1,) ).to(device)
+        #norm = np.linalg.norm(spectrogram)
+        #snippet = spectrogram / norm
+        #snippet = torch.reshape( snippet, (-1,) ).to(device)
 
+        snippet = dataset[s]["spectrogram"] #need to make according changes considering preprocessing
         regen = model(snippet)
-
+        
+        name = str(s)
+        plot_spec(snippet, regen, phase, name)
+        
         # prepare a white border between to place between original and reproduced
-        whiteborder = np.zeros( (50, data[s]["spectrogram"].shape[2]) )
+        #whiteborder = np.zeros( (50, data[s]["spectrogram"].shape[2]) )
 
         # reshape snippet into spectrogram shape
-        snippet = snippet.reshape( (data[s].shape[1:2]) )
-        snippet = snippet.reshape( (194, 257) )
+        #snippet = snippet.reshape( (data[s].shape[1:2]) )
+        #snippet = snippet.reshape( (194, 257) )
 
         # reshape regenerated output into a spectrogram
-        regen = regen.detach().numpy().reshape( (194, 257) )
+        #regen = regen.detach().numpy().reshape( (194, 257) )
 
-        c = np.concatenate((snippet, whiteborder))
-        c = np.concatenate((c, regen))
+        #c = np.concatenate((snippet, whiteborder))
+        #c = np.concatenate((c, regen))
 
-        plt.matshow(c)
-        plt.savefig(folder + "/regen-spectrograms/" + str(s))
+        #plt.matshow(c)
+        #plt.savefig(folder + "/regen-spectrograms/" + str(s))
         # close pyplot every time to save memory
-        plt.close()
+        #plt.close()
 
