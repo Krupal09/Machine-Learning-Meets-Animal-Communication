@@ -381,4 +381,6 @@ if __name__ == "__main__":
 
         #plt.matshow(c)
         #plt.savefig(folder + "/regen-spectrograms/" + str(s))
+        # close is every time to save memory
+        #plt.close()
 
