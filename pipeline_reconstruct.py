@@ -217,8 +217,8 @@ def get_audio_files():
 #       return { "name" : img_name, "spectrogram" : image }
 
 def save_decod_spec(spec, epoch):
-    spec = spec.view(spec.size(0), 1, 28, 28)
-    save_image(spec, ARGS.decod_dir)
+    spec = spec.view(spec.size(0), 1, 128, 256)
+    save_image(spec, os.path.join(ARGS.decod_dir, 'reconstructed_epoch_{}.png'.format(epoch)))
 
 if __name__ == "__main__":
 
@@ -351,36 +351,36 @@ if __name__ == "__main__":
     os.mkdir("regen-spectrograms")
     nsamples = 15
 
-    for sample in range(nsamples):
-        s = int( np.round( random.uniform(0, len(data)) ) )
+    #for sample in range(nsamples):
+        #s = int( np.round( random.uniform(0, len(data)) ) )
 
-        spectrogram = data[s]["spectrogram"]
+        #spectrogram = data[s]["spectrogram"]
 
         # if the spectrogram is not of width 194 units, don't run the iteration
-        if spectrogram.shape[1] != 194:
-            continue
+        #if spectrogram.shape[1] != 194:
+            #continue
 
-        norm = np.linalg.norm(spectrogram)
-        snippet = spectrogram / norm
-        snippet = torch.reshape( snippet, (-1,) ).to(device)
+        #norm = np.linalg.norm(spectrogram)
+        #snippet = spectrogram / norm
+        #snippet = torch.reshape( snippet, (-1,) ).to(device)
 
-        regen = model(snippet)
+        #regen = model(snippet)
 
         # prepare a white border between to place between original and reproduced
-        whiteborder = np.zeros( (50, data[s]["spectrogram"].shape[2]) )
+        #whiteborder = np.zeros( (50, data[s]["spectrogram"].shape[2]) )
 
         # reshape snippet into spectrogram shape
-        snippet = snippet.reshape( (data[s].shape[1:2]) )
-        snippet = snippet.reshape( (194, 257) )
+        #snippet = snippet.reshape( (data[s].shape[1:2]) )
+        #snippet = snippet.reshape( (194, 257) )
 
         # reshape regenerated output into a spectrogram
-        regen = regen.detach().numpy().reshape( (194, 257) )
+        #regen = regen.detach().numpy().reshape( (194, 257) )
 
-        c = np.concatenate((snippet, whiteborder))
-        c = np.concatenate((c, regen))
+        #c = np.concatenate((snippet, whiteborder))
+        #c = np.concatenate((c, regen))
 
-        plt.matshow(c)
-        plt.savefig(folder + "/regen-spectrograms/" + str(s))
+        #plt.matshow(c)
+        #plt.savefig(folder + "/regen-spectrograms/" + str(s))
         # close pyplot every time to save memory
-        plt.close()
+        #plt.close()
 

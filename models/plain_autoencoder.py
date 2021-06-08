@@ -5,11 +5,9 @@ class Autoencoder(nn.Module):
     def __init__(self, nbottleneck):
         super(Autoencoder, self).__init__()
         self.encoder = nn.Sequential(
-            nn.Linear((1, 128 * 256), 100),
+            nn.Linear(128 * 256, 100),
             nn.ReLU(True),
             nn.Linear(100, 50),
-            nn.ReLU(True),
-            nn.Linear(50, 25),
             nn.ReLU(True),
             nn.Linear(50, 25),
             nn.ReLU(True),
@@ -31,8 +29,11 @@ class Autoencoder(nn.Module):
 
     def forward(self, x):
         print("input: ", x.shape)
+        x = x.view(x.size(0), -1)
         x = self.encoder(x)
         x = self.decoder(x)
+        x = x.view(-1, 128, 256)
+        print("output: ", x.shape)
         return x
 
     def generatefeatures(self, x):
