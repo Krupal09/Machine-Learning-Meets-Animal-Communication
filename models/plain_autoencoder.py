@@ -5,7 +5,7 @@ class Autoencoder(nn.Module):
     def __init__(self, nbottleneck):
         super(Autoencoder, self).__init__()
         self.encoder = nn.Sequential(
-            nn.Linear((1, 128, 256), 100),
+            nn.Linear((1, 128 * 256), 100),
             nn.ReLU(True),
             nn.Linear(100, 50),
             nn.ReLU(True),
