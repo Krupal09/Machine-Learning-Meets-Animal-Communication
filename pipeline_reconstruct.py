@@ -178,7 +178,7 @@ def get_audio_files():
     audio_files = list(get_audio_files_from_dir(ARGS.data_dir))
     #log.info("Found {} audio files for training.".format(len(audio_files)))
     if len(audio_files) == 0:
-        log.close()
+        #log.close()
         exit(1)
     return audio_files
 
@@ -218,12 +218,13 @@ def get_audio_files():
 
 
 activations = {}
-# get_activation adapted from
+# get_activation of each layer at each epoch;
+# adapted from
 # https://discuss.pytorch.org/t/how-can-l-load-my-best-model-as-a-feature-extractor-evaluator/17254/2
-def get_activation(layer, epoch):
+def get_activation(layer_name, epoch):
     def hook(module, input, output): # module is the layer that we are interested in
-        name = "layer_{}".format(epoch)
-        activations[name] = output[0, 2].detach()
+        name = "{}_{}".format(layer_name.split(".")[1], epoch)
+        activations[name] = output.detach() # save one feature map per layer per epoch
     return hook
 
 class SaveOutput:
@@ -344,15 +345,18 @@ if __name__ == "__main__":
     for epoch in range(epochs):
         running_loss = 0
 
-        for layer in model.modules():
+        for name, layer in model.named_modules():
+            print("name is ", name)
+            #print("layer is ", layer)
             if isinstance(layer, torch.nn.ReLU):
                 # handle = layer.register_forward_hook(save_output)
-                handle = layer.register_forward_hook(get_activation(layer, epoch))
+                print("layer is ", layer)
+                handle = layer.register_forward_hook(get_activation(name, epoch))
                 hook_handles.append(handle)
 
         for specs,_ in dataset:
 
-            print("The shape of the specs is ", specs.size())
+            #print("The shape of the specs is ", specs.size())
             # the data array returns a dict of spectrogram and its name
             #spectrogram = spectrogram["spectrogram"]
 
@@ -395,6 +399,8 @@ if __name__ == "__main__":
         #training_loss.append(loss)
         print("epoch : {}/{}, recon loss = {:.8f}".format(epoch + 1, epochs, loss))
         #sys.stdout.flush()
+
+        # alternative: use tensorboard to visualize images
         
         if epoch % 5 == 0:
             #print(outputs)
@@ -403,7 +409,8 @@ if __name__ == "__main__":
         # quick test on the save_output; shd not be zero
         #print("The len of save_output.outputs is ", len(save_output.outputs))
         print("The len of hook_handles", len(hook_handles))
-        print("hook_handles 1 is ", hook_handles[0])
+        #print("hook_handles 1 is ", hook_handles[0])
+        print("Activation dict is ", activations)
 
     torch.save(model.state_dict(), ARGS.model_dir)
 
