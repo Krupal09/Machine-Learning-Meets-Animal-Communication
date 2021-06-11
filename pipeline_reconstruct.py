@@ -332,6 +332,7 @@ if __name__ == "__main__":
 
 
     # helper tool to visualize the flow of the network and how the shape of the data changes from layer to layer
+    # usage: tensorboard --logdir runs
     tb = SummaryWriter()
     # create a single batch of data to generate graph summary
     imgs, _ = next(iter(dataloaders))
@@ -354,10 +355,8 @@ if __name__ == "__main__":
                 hook_handles.append(handle)
 
         for specs,_ in dataset:
-            #if i == 0:
-                #for
 
-
+            # original code: commented out
             #print("The shape of the specs is ", specs.size())
             # the data array returns a dict of spectrogram and its name
             #spectrogram = spectrogram["spectrogram"]
