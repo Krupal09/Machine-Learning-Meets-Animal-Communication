@@ -16,6 +16,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torchvision.utils import save_image
+from torch.utils.tensorboard import SummaryWriter
 import argparse
 import torchvision
 from torchvision import transforms
@@ -233,6 +234,7 @@ class SaveOutput:
     """
     defining the hook to capture activations of each layer
     adapted from: https://github.com/cosmic-cortex/pytorch-hooks-tutorial/blob/master/hooks.ipynb
+    https://gist.github.com/Tushar-N/680633ec18f5cb4b47933da7d10902af
     """
 
     def __init__(self):
@@ -312,6 +314,7 @@ if __name__ == "__main__":
             pin_memory=True,
         )
 
+
     # create a model from `AE` autoencoder class
     # load it to the specified device, either gpu or cpu
     model = autoencoder(ARGS.n_bottleneck).to(ARGS.device)
@@ -324,37 +327,36 @@ if __name__ == "__main__":
     # mean-squared error loss
     loss_fn = nn.MSELoss()
 
-    # register the hook to collect the outputs of the layers of our interest
-    # for plain_ae: nn.ReLU
-    #save_output = SaveOutput()
-    hook_handles = []
-
-    #for layer in model.modules():
-        #if isinstance(layer, torch.nn.ReLU):
-            #handle = layer.register_forward_hook(save_output)
-            #handle = layer.register_forward_hook(get_activation(layer))
-            #hook_handles.append(handle)
-
-    # quick test on the save_output; shd be zero
-    #print("The len of save_output.outputs is ", len(save_output.outputs))
-    print("The len of hook_handles is ", len(hook_handles))
-
     # train model
     epochs = ARGS.max_train_epochs
-    #training_loss = []
+
+
+    # helper tool to visualize the flow of the network and how the shape of the data changes from layer to layer
+    tb = SummaryWriter()
+    # create a single batch of data to generate graph summary
+    imgs, _ = next(iter(dataloaders))
+    tb.add_graph(model, imgs)
+    tb.close()
+
     print("training starts")
 
-    for epoch in range(epochs):
+    for epoch in range(ARGS.max_train_epochs):
         running_loss = 0
 
+
+        hook_handles = []
         for name, layer in model.named_modules():
             #print("layer is ", layer)
             if isinstance(layer, torch.nn.ReLU):
-                # handle = layer.register_forward_hook(save_output)
+                # register the hook to collect the outputs of the layers of our interest
+                # for plain_ae: nn.ReLU
                 handle = layer.register_forward_hook(get_activation(name, epoch))
                 hook_handles.append(handle)
 
         for specs,_ in dataset:
+            #if i == 0:
+                #for
+
 
             #print("The shape of the specs is ", specs.size())
             # the data array returns a dict of spectrogram and its name
@@ -392,35 +394,37 @@ if __name__ == "__main__":
             # loss.item()*data.size(0): total loss of the current batch (not averaged).
             running_loss += train_loss.item() * specs.size(0)
 
+        for handle in hook_handles:
+            handle.remove()
+
         # compute the epoch training loss
         loss = running_loss / len(audio_files)
 
         # display the epoch training loss
         #training_loss.append(loss)
         print("epoch : {}/{}, recon loss = {:.8f}".format(epoch + 1, epochs, loss))
-        #sys.stdout.flush()
-
-        # alternative: use tensorboard to visualize images
         
         if epoch % 5 == 0:
             #print(outputs)
             save_decod_spec(outputs.cpu().data, epoch)
 
-        # quick test on the save_output; shd not be zero
-        #print("The len of save_output.outputs is ", len(save_output.outputs))
-        print("The len of hook_handles", len(hook_handles))
-        #print("hook_handles 1 is ", hook_handles[0])
-        #print("Activation dict is ", activations)
-
+    # concatenate all the outputs we saved to get the the activations for each layer for the whole dataset
     activations = {name: torch.cat(outputs, 0) for name, outputs in activations.items()}
 
-
-    for k, v in activations.items():
+    plt.figure(figsize=(20,20), frameon=False)
+    for layer_epoch, act in activations.items():
         # just print out the sizes of the saved activations as a sanity check
-        #print(k, v.size())
+        # print(layer_epoch, len(act))
 
-    path = os.path.join(ARGS.model_dir, "plain_ae.pk")
-    torch.save(model.state_dict(), path)
+        # instead of plotting the activations of the entire dataset at this layer and this epoch
+        # plot the last 16 activations
+        fig, axarr = plt.subplots(4,4)
+        #for idx in range(16):
+            #axarr[idx].imshow(act[-idx].numpy())
+
+
+    #path = os.path.join(ARGS.model_dir, "plain_ae.pk")
+    #torch.save(model.state_dict(), path)
 
     #images = module_output_to_numpy(save_)
 
