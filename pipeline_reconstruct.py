@@ -216,9 +216,39 @@ def get_audio_files():
 
 #       return { "name" : img_name, "spectrogram" : image }
 
+
+activations = {}
+# get_activation adapted from
+# https://discuss.pytorch.org/t/how-can-l-load-my-best-model-as-a-feature-extractor-evaluator/17254/2
+def get_activation(layer, epoch):
+    def hook(module, input, output): # module is the layer that we are interested in
+        name = "layer_{}".format(epoch)
+        activations[name] = output[0, 2].detach()
+    return hook
+
+class SaveOutput:
+    """
+    defining the hook to capture activations of each layer
+    adapted from: https://github.com/cosmic-cortex/pytorch-hooks-tutorial/blob/master/hooks.ipynb
+    """
+
+    def __init__(self):
+        self.outputs = [] # this can be changed to dict
+
+    def __call__(self, module, module_in, module_out):
+        self.outputs.append(module_out)
+
+    # delete the hook
+    def clear(self):
+        self.outputs = []
+
 def save_decod_spec(spec, epoch):
     spec = spec.view(spec.size(0), 1, 128, 256)
     save_image(spec, os.path.join(ARGS.decod_dir, 'reconstructed_epoch_{}.png'.format(epoch)))
+
+def module_output_to_numpy(tensor):
+    return tensor.detach().to('cpu').numpy()
+
 
 if __name__ == "__main__":
 
@@ -252,7 +282,7 @@ if __name__ == "__main__":
     else:
         noise_files = []
 
-    # Pre-processing is carried out --> input to the network should be (128 x 256)
+    # Pre-processing is carried out --> input to the network should be (batch_size, 128 x 256)
     dataset = Dataset(
             file_names=audio_files,
             working_dir=ARGS.data_dir,
@@ -269,6 +299,7 @@ if __name__ == "__main__":
             noise_files=noise_files,
         )
 
+    print("batch_size is ", ARGS.batch_size)
     dataloaders = torch.utils.data.DataLoader(
             dataset,
             batch_size=ARGS.batch_size,
@@ -290,15 +321,38 @@ if __name__ == "__main__":
     # mean-squared error loss
     loss_fn = nn.MSELoss()
 
+    # register the hook to collect the outputs of the layers of our interest
+    # for plain_ae: nn.ReLU
+    #save_output = SaveOutput()
+    hook_handles = []
+
+    #for layer in model.modules():
+        #if isinstance(layer, torch.nn.ReLU):
+            #handle = layer.register_forward_hook(save_output)
+            #handle = layer.register_forward_hook(get_activation(layer))
+            #hook_handles.append(handle)
+
+    # quick test on the save_output; shd be zero
+    #print("The len of save_output.outputs is ", len(save_output.outputs))
+    print("The len of hook_handles is ", len(hook_handles))
+
     # train model
-    #batch_size = ARGS.batch_size
     epochs = ARGS.max_train_epochs
     #training_loss = []
     print("training starts")
+
     for epoch in range(epochs):
         running_loss = 0
 
+        for layer in model.modules():
+            if isinstance(layer, torch.nn.ReLU):
+                # handle = layer.register_forward_hook(save_output)
+                handle = layer.register_forward_hook(get_activation(layer, epoch))
+                hook_handles.append(handle)
+
         for specs,_ in dataset:
+
+            print("The shape of the specs is ", specs.size())
             # the data array returns a dict of spectrogram and its name
             #spectrogram = spectrogram["spectrogram"]
 
@@ -343,13 +397,22 @@ if __name__ == "__main__":
         #sys.stdout.flush()
         
         if epoch % 5 == 0:
+            #print(outputs)
             save_decod_spec(outputs.cpu().data, epoch)
+
+        # quick test on the save_output; shd not be zero
+        #print("The len of save_output.outputs is ", len(save_output.outputs))
+        print("The len of hook_handles", len(hook_handles))
+        print("hook_handles 1 is ", hook_handles[0])
 
     torch.save(model.state_dict(), ARGS.model_dir)
 
+    #images = module_output_to_numpy(save_)
+
+
     # visualize regenerated samples
-    os.mkdir("regen-spectrograms")
-    nsamples = 15
+    #os.mkdir("regen-spectrograms")
+    #nsamples = 15
 
     #for sample in range(nsamples):
         #s = int( np.round( random.uniform(0, len(data)) ) )
