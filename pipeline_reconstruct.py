@@ -408,7 +408,7 @@ if __name__ == "__main__":
             save_decod_spec(outputs.cpu().data, epoch)
 
     # concatenate all the outputs we saved to get the the activations for each layer for the whole dataset
-    activations = {name: torch.cat(outputs, 0) for name, outputs in activations.items()}
+    activations = {name: torch.cat(acts, 0) for layer, acts in activations.items()}
 
     plt.figure(figsize=(20,20), frameon=False)
     for layer_epoch, act in activations.items():
