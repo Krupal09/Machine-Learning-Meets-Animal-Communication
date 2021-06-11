@@ -29,6 +29,7 @@ from datetime import datetime
 import os
 import sys
 import io
+import collections
 
 from data.audiodataset import (
     get_audio_files_from_dir,
@@ -217,14 +218,15 @@ def get_audio_files():
 #       return { "name" : img_name, "spectrogram" : image }
 
 
-activations = {}
+# a dictionary that keeps saving the activations as they come
+activations = collections.defaultdict(list)
 # get_activation of each layer at each epoch;
 # adapted from
 # https://discuss.pytorch.org/t/how-can-l-load-my-best-model-as-a-feature-extractor-evaluator/17254/2
 def get_activation(layer_name, epoch):
     def hook(module, input, output): # module is the layer that we are interested in
-        name = "{}_{}".format(layer_name.split(".")[1], epoch)
-        activations[name] = output.detach() # save one feature map per layer per epoch
+        name = "{}_epoch_{}".format(layer_name.split(".")[1], epoch)
+        activations[name].append(output.detach()) # output.cpu()
     return hook
 
 class SaveOutput:
@@ -300,7 +302,7 @@ if __name__ == "__main__":
             noise_files=noise_files,
         )
 
-    print("batch_size is ", ARGS.batch_size)
+    #print("batch_size is ", ARGS.batch_size)
     dataloaders = torch.utils.data.DataLoader(
             dataset,
             batch_size=ARGS.batch_size,
@@ -346,11 +348,9 @@ if __name__ == "__main__":
         running_loss = 0
 
         for name, layer in model.named_modules():
-            print("name is ", name)
             #print("layer is ", layer)
             if isinstance(layer, torch.nn.ReLU):
                 # handle = layer.register_forward_hook(save_output)
-                print("layer is ", layer)
                 handle = layer.register_forward_hook(get_activation(name, epoch))
                 hook_handles.append(handle)
 
@@ -410,9 +410,17 @@ if __name__ == "__main__":
         #print("The len of save_output.outputs is ", len(save_output.outputs))
         print("The len of hook_handles", len(hook_handles))
         #print("hook_handles 1 is ", hook_handles[0])
-        print("Activation dict is ", activations)
+        #print("Activation dict is ", activations)
 
-    torch.save(model.state_dict(), ARGS.model_dir)
+    activations = {name: torch.cat(outputs, 0) for name, outputs in activations.items()}
+
+
+    for k, v in activations.items():
+        # just print out the sizes of the saved activations as a sanity check
+        #print(k, v.size())
+
+    path = os.path.join(ARGS.model_dir, "plain_ae.pk")
+    torch.save(model.state_dict(), path)
 
     #images = module_output_to_numpy(save_)
 
