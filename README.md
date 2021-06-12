@@ -3,15 +3,21 @@
 
 This is WP - unsupervised feature learning and clustering.
 
-It is evolved from Hunaid's Lucidmonkeys repo (https://github.com/104H/lucidmonkeys).
+It is evolved from Hunaid's Lucidmonkeys repo (https://github.com/104H/lucidmonkeys). 
+We (Krupal and Rachael) rewrote the pipeline code created by Hunaid (IDC) and Krupal. The improvements lies in the following aspects: <br>
+(1). we modularized the pipeline to enhance readability and re-usability and included 'argparse' to enable training the networks with different parameters easily (instead of having to dive into the code to make changes). <br>
+(2). We integrated commonly used signal preprocessing techniques which have been tested on killer whales and other animal species and part of detection and denoising WPs. <br>
+(3). We also visualized inputs, reconstructions and activations of intermediate layers to gain a more intuitive understanding of the work of the networks. During the IDC presentation, the feedback from the supervisors is the lack of examples to show the performance of autoencoders and clustering part.\newline 
+(4). We implemented a more detailed and standard logging (as opposed to 'sys.stdout.flush()') and utilized tensorboard for sanity check and keeping tracking of the training .
 
-Meanwhile, new developments (e.g. stand-alone pre-processing) are being added and the original repo is being restructured. 
+Usage (you need to update the paths and batch_size, max_epochs, and augmentation to your specific experiments):
+python3 pipeline_reconstruct.py --data_dir /.../ae/train_data/ --noise_dir /.../ae/noise/ --model_dir /.../ae/model --decod_dir /.../ae/decod_img/ --cache_dir /.../ae/cache --batch_size 24 --augmentation False --max_train_epochs 100
 
 As a starting point, it is important to understand how preprocessing in the current workflow, it is recommended to put the ORCA-Spot Preprocessing.pdf from Felix (could be found on slack) and the two .py files under 'data' side-by-side and read through the commented codes.
 The preprocessing is adapted from Orcaspot. It would also be helpful to read the 'Data preprocessing and training' section of the publication to gain an overall understanding of the workflow (https://www.nature.com/articles/s41598-019-47335-w).
 
 
-Below are the old readme from Lucidmonkeys. Pls be aware that the instructions on how to use the files may throw an error as we are still working on improving and streamline the pipeline. 
+Below are the old readme from Lucidmonkeys.
 
 ----------------------------------------------------------------------------------
 
