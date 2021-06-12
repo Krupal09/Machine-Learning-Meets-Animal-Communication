@@ -334,7 +334,7 @@ if __name__ == "__main__":
     # helper tool to visualize the flow of the network and how the shape of the data changes from layer to layer
     # usage: tensorboard --logdir runs
     tb = SummaryWriter()
-    # create a single batch of data to generate graph summary
+    # create a single batch of tensor of images
     imgs, _ = next(iter(dataloaders))
     grid = make_grid(imgs)
     tb.add_image("input examples", grid)
@@ -343,6 +343,7 @@ if __name__ == "__main__":
 
     print("training starts")
 
+    tb = SummaryWriter()
     for epoch in range(ARGS.max_train_epochs):
         running_loss = 0
 
@@ -356,7 +357,9 @@ if __name__ == "__main__":
                 handle = layer.register_forward_hook(get_activation(name, epoch))
                 hook_handles.append(handle)
 
-        for specs,_ in dataset:
+        for batch_id, (specs,_) in enumerate(dataset):
+
+            tb.add_image("original_{}".format(batch_id), specs)
 
             # original code: commented out
             #print("The shape of the specs is ", specs.size())
@@ -380,6 +383,8 @@ if __name__ == "__main__":
 
             # compute reconstructions
             outputs = model(specs)
+            tb.add_image("reconstructed_{}".format(batch_id), outputs)
+            tb.close()
 
             # compute training reconstruction loss
             train_loss = loss_fn(outputs, specs)
