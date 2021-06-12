@@ -15,7 +15,7 @@ import pathlib
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torchvision.utils import save_image
+from torchvision.utils import save_image, make_grid
 from torch.utils.tensorboard import SummaryWriter
 import argparse
 import torchvision
@@ -336,6 +336,8 @@ if __name__ == "__main__":
     tb = SummaryWriter()
     # create a single batch of data to generate graph summary
     imgs, _ = next(iter(dataloaders))
+    grid = make_grid(imgs)
+    tb.add_image("input examples", grid)
     tb.add_graph(model, imgs)
     tb.close()
 
