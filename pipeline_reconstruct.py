@@ -359,7 +359,7 @@ if __name__ == "__main__":
 
         for batch_id, (specs,_) in enumerate(dataset):
 
-            tb.add_image("original_{}".format(batch_id), specs)
+            tb.add_image("epoch_{}_batch_{}_original".format(epoch, batch_id), specs)
 
             # original code: commented out
             #print("The shape of the specs is ", specs.size())
@@ -383,7 +383,7 @@ if __name__ == "__main__":
 
             # compute reconstructions
             outputs = model(specs)
-            tb.add_image("reconstructed_{}".format(batch_id), outputs)
+            tb.add_image("epoch_{}_batch_{}_reconstructed".format(epoch, batch_id), outputs)
             tb.close()
 
             # compute training reconstruction loss
