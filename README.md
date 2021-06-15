@@ -10,6 +10,8 @@ We (Krupal and Rachael) rewrote the pipeline code created by Hunaid (IDC) and Kr
 (3). We also visualized inputs, reconstructions and activations of intermediate layers to gain a more intuitive understanding of the work of the networks. During the IDC presentation, the feedback from the supervisors is the lack of examples to show the performance of autoencoders and clustering part.\newline 
 (4). We implemented a more detailed and standard logging (as opposed to 'sys.stdout.flush()') and utilized tensorboard for sanity check and keeping tracking of the training .
 
+Work-in-progress: early stopping and checkpoints
+
 Usage (you need to update the paths and batch_size, max_epochs, and augmentation to your specific experiments):
 python3 pipeline_reconstruct.py --data_dir /.../ae/train_data/ --noise_dir /.../ae/noise/ --model_dir /.../ae/model --decod_dir /.../ae/decod_img/ --cache_dir /.../ae/cache --batch_size 24 --augmentation False --max_train_epochs 100
 
