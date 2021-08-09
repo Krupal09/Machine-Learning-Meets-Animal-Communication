@@ -477,7 +477,7 @@ class Dataset(AudioDataset):
         n_freq_bins=256, # determines the width of the image
         f_min=0,
         f_max=18000,
-        seq_len=640, # 128; shd be adjusted together with sequence_len in class StridedAudioDataset (called by predict.py)
+        seq_len=128, # shd be adjusted together with sequence_len in class StridedAudioDataset (called by predict.py)
         augmentation=False,
         noise_files=[],
         *args,

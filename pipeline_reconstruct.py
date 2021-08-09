@@ -72,6 +72,13 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "--test_ae_data_dir",
+    type=str,
+    default=None,
+    help="Path to a directory with positive files used for testing autoencoder reconstructions after every couple of epochs.",
+)
+
+parser.add_argument(
     "--model_dir",
     type=str,
     help="The directory where the retrained/adapted model will be stored.",
@@ -108,7 +115,7 @@ parser.add_argument(
 parser.add_argument(
     "--no_cuda",
     dest="cuda",
-    action="store_false",
+    action="store_false", # default to True when the command-line argument is not present
     help="Do not use cuda to train model.",
 )
 
@@ -181,8 +188,8 @@ ARGS.device = torch.device("cuda") if ARGS.cuda else torch.device("cpu")
 Get audio all audio files from the given data directory except they are broken.
 discard the can_load_from_csv() of orcaspot
 """
-def get_audio_files():
-    audio_files = list(get_audio_files_from_dir(ARGS.data_dir))
+def get_audio_files(path):
+    audio_files = list(get_audio_files_from_dir(path))
     #log.info("Found {} audio files for training.".format(len(audio_files)))
     if len(audio_files) == 0:
         #log.close()
@@ -275,9 +282,13 @@ if __name__ == "__main__":
 
     dataOpts = DefaultSpecDatasetOps
 
+    #print("n_fft is", dataOpts["n_fft"])
+
     sequence_len = int(
         float(ARGS.sequence_len) / 1000 * dataOpts["sr"] / dataOpts["hop_length"]
     )
+
+    #print("sequence length is ", sequence_len, ARGS.sequence_len)
 
     # for variational autoencoder, could use splits to test how well the learned representation generalize
     # split_fracs = {"train": .7, "val": .15, "test": .15}
@@ -285,7 +296,8 @@ if __name__ == "__main__":
     #    split_fracs, working_dir=ARGS.data_dir, split_per_dir=True
     #)
 
-    audio_files = get_audio_files()
+    audio_files = get_audio_files(ARGS.data_dir)
+    test_audio_files = get_audio_files(ARGS.test_ae_data_dir)
 
     if ARGS.noise_dir:
         noise_files = [str(p) for p in pathlib.Path(ARGS.noise_dir).glob("*.wav")]
@@ -309,6 +321,22 @@ if __name__ == "__main__":
             noise_files=noise_files,
         )
 
+    test_dataset = Dataset(
+        file_names=test_audio_files,
+        working_dir=ARGS.test_ae_data_dir,
+        cache_dir=ARGS.cache_dir,
+        sr=dataOpts["sr"],
+        n_fft=dataOpts["n_fft"],
+        hop_length=dataOpts["hop_length"],
+        n_freq_bins=dataOpts["n_freq_bins"],
+        freq_compression=ARGS.freq_compression,
+        f_min=dataOpts["fmin"],
+        f_max=dataOpts["fmax"],
+        seq_len=sequence_len,
+        augmentation=ARGS.augmentation,
+        noise_files=noise_files,
+    )
+
     #print("batch_size is ", ARGS.batch_size)
     dataloaders = torch.utils.data.DataLoader(
             dataset,
@@ -319,10 +347,23 @@ if __name__ == "__main__":
             pin_memory=True,
         )
 
+    test_dataloaders = torch.utils.data.DataLoader(
+        dataset,
+        batch_size=ARGS.batch_size,
+        shuffle=True,
+        num_workers=ARGS.num_workers,
+        drop_last=True,
+        pin_memory=True,
+    )
+
+    #imgs, _ = next(iter(dataloaders))
+
 
     # create a model from `AE` autoencoder class
     # load it to the specified device, either gpu or cpu
-    model = autoencoder(ARGS.n_bottleneck).to(ARGS.device)
+    model = autoencoder(ARGS.n_bottleneck, ARGS.batch_size).to(ARGS.device)
+
+    #print("device is", ARGS.device)
 
     # write model description to standard output
     print(model)
@@ -332,25 +373,23 @@ if __name__ == "__main__":
     # mean-squared error loss
     loss_fn = nn.MSELoss()
 
-    callbacks = [EarlyStopping(monitor='loss_fn', patience=5)]
-    model.set_callbacks(callbacks)
+    #callbacks = [EarlyStopping(monitor='loss_fn', patience=5)]
+    #model.set_callbacks(callbacks)
 
     # train model
     epochs = ARGS.max_train_epochs
-
-
 
     # helper tool to visualize the flow of the network and how the shape of the data changes from layer to layer
     # usage: tensorboard --logdir=YOUR_PATH runs
     tb = SummaryWriter()
     # create a single batch of tensor of images
-    imgs, _ = next(iter(dataloaders))
-    for img in imgs:
-        print("max is ", torch.max(img))
-        print("min is ", torch.min(img))
+    imgs, _ = next(iter(test_dataloaders))
+    #for img in imgs:
+        #print("max is ", torch.max(img))
+        #print("min is ", torch.min(img))
     grid = make_grid(imgs)
     tb.add_image("input examples", grid)
-    tb.add_graph(model, imgs)
+    #tb.add_graph(model, imgs)
     tb.close()
 
     print("training starts")
@@ -358,23 +397,25 @@ if __name__ == "__main__":
 
     for epoch in range(ARGS.max_train_epochs):
         running_loss = 0
+        print("Epoch ", epoch, "is running")
 
-
-        if epoch% 5 == 0:
-            hook_handles = []
-            for name, layer in model.named_modules():
+        #if epoch% 5 == 0:
+            #hook_handles = []
+            #for name, layer in model.named_modules():
                 #print("layer is ", layer)
-                if isinstance(layer, torch.nn.ReLU):
+                #if isinstance(layer, torch.nn.ReLU):
                     # register the hook to collect the outputs of the layers of our interest
                     # for plain_ae: nn.ReLU
-                    handle = layer.register_forward_hook(get_activation(name, epoch))
-                    hook_handles.append(handle)
+                    #handle = layer.register_forward_hook(get_activation(name, epoch))
+                    #hook_handles.append(handle)
 
-        for batch_id, (specs,_) in enumerate(dataset):
+        #for batch_id, (specs,_) in enumerate(dataset):
+        for batch_id, (specs, _) in enumerate(dataloaders):
+            specs = specs.to(ARGS.device)
 
-            if batch_id == 0:
-                tb = SummaryWriter()
-                tb.add_image("epoch_{}_batch_{}_original".format(epoch, batch_id), specs)
+            #if batch_id == 0:
+                #tb = SummaryWriter()
+                #tb.add_image("epoch_{}_batch_{}_original".format(epoch, batch_id), specs)
 
             # original code: commented out
             #print("The shape of the specs is ", specs.size())
@@ -398,9 +439,9 @@ if __name__ == "__main__":
 
             # compute reconstructions
             outputs = model(specs)
-            if batch_id == 0:
-                tb.add_image("epoch_{}_batch_{}_reconstructed".format(epoch, batch_id), outputs)
-                tb.close()
+            #if batch_id == 0:
+                #tb.add_image("epoch_{}_batch_{}_reconstructed".format(epoch, batch_id), outputs)
+                #tb.close()
 
             # compute training reconstruction loss
             train_loss = loss_fn(outputs, specs)
@@ -417,8 +458,18 @@ if __name__ == "__main__":
             running_loss += train_loss.item() * specs.size(0)
 
         if epoch % 5 == 0:
-            for handle in hook_handles:
-                handle.remove()
+            #for handle in hook_handles:
+                #handle.remove()
+            print("Evaluating...")
+            test_imgs, _ = next(iter(test_dataloaders))
+            test_imgs = test_imgs.to(ARGS.device)
+            recon_test = model(test_imgs)
+            tb = SummaryWriter()
+            grid = make_grid(imgs)
+            tb.add_image("Epoch - {}".format(epoch), grid)
+            # tb.add_graph(model, imgs)
+            tb.close()
+            print("Finished saving reconstructed...")
 
         # compute the epoch training loss
         loss = running_loss / len(audio_files)
@@ -433,7 +484,7 @@ if __name__ == "__main__":
             #save_decod_spec(outputs.cpu().data, epoch)
 
     # concatenate all the outputs we saved to get the the activations for each layer for the whole dataset
-    activations = {name: torch.cat(acts, 0) for layer, acts in activations.items()}
+    #activations = {name: torch.cat(acts, 0) for layer, acts in activations.items()}
 
     plt.figure(figsize=(20,20), frameon=False)
     for layer_epoch, act in activations.items():
