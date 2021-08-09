@@ -8,7 +8,7 @@ Finally it save a csv file with the filename, bottleneck neuron values and the c
 '''
 
 
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import pickle
 import pathlib
 
