@@ -129,8 +129,8 @@ class Spectrogram(object):
             )
         # Fourier transform: 2 inputs and 2 output dimensions (re, im).
         # For each frequency bin, the magnitude sqrt(re^2 + im^2) tells you the amplitude of the component at the corresponding frequency.
-        # amplitude/color in spectrogram: height in each FT (not of our interest though)
-        # The phase atan2(im, re) tells you the relative phase of that component.
+        # amplitude/color in spectrogram: height in each FT
+        # The phase atan2(im, re) tells you the relative phase of that component (not of our interest though).
         # STFT sliding is similar to sliding windows of conv2D
         # n_frames = ((data_len - (win_size - 1) - 1) / hop_size) + 1
         # librosa stft returns: (1 + n_fft/2, n_frames) (comparison of librosa and torch stft: https://www.programmersought.com/article/76425845654/)

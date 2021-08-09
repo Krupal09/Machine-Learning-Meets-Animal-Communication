@@ -3,6 +3,8 @@ Module: audiodataset.py
 Authors: Christian Bergler, Hendrik Schroeter
 Institution: Friedrich-Alexander-University Erlangen-Nuremberg, Department of Computer Science, Pattern Recognition Lab
 Last Access: 12.12.2019
+Adapted and commented by R.X. Cheng
+Last modified:
 """
 
 import re
@@ -33,10 +35,10 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 Data preprocessing default options
 """
 DefaultSpecDatasetOps = {
-    "sr": 8000,
+    "sr": 44100,
     "preemphases": 0.98, # could be treated as default
-    "n_fft": 512, # fft window size (s) = n_fft / sr
-    "hop_length": 80, # number of hops = hop_length / sr
+    "n_fft": 2048, # fft window size (s) = n_fft / sr
+    "hop_length": 220, # number of hops = hop_length / sr
     # n_freq_bins used for frequency compression;
     # we worked with an architecture compressing data in every step by a factor of 2.
     # In order to ensure even numbers regarding the time and frequency shape after dividing by 2,
@@ -45,7 +47,7 @@ DefaultSpecDatasetOps = {
     "fmin": 0,
     "fmax": 2500,
     "freq_compression": "linear",
-    "min_level_db": -100,
+    "min_level_db": -100, #100?
     "ref_level_db": 20,
 }
 
@@ -469,13 +471,13 @@ class Dataset(AudioDataset):
         working_dir=None,
         cache_dir=None,
         sr=44100,
-        n_fft=4096,
-        hop_length=441,
+        n_fft=2048, #4096
+        hop_length=220, #441
         freq_compression="linear",
         n_freq_bins=256, # determines the width of the image
         f_min=0,
         f_max=18000,
-        seq_len=128, # shd be adjusted together with sequence_len in class StridedAudioDataset (called by predict.py)
+        seq_len=640, # 128; shd be adjusted together with sequence_len in class StridedAudioDataset (called by predict.py)
         augmentation=False,
         noise_files=[],
         *args,

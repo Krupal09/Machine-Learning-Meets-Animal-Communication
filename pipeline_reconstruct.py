@@ -18,6 +18,7 @@ import torch.optim as optim
 from torchvision.utils import save_image, make_grid
 from torch.utils.tensorboard import SummaryWriter
 import argparse
+from torchsample.callbacks import EarlyStopping
 import torchvision
 from torchvision import transforms
 from torch.utils.data import Dataset, DataLoader
@@ -331,8 +332,12 @@ if __name__ == "__main__":
     # mean-squared error loss
     loss_fn = nn.MSELoss()
 
+    callbacks = [EarlyStopping(monitor='loss_fn', patience=5)]
+    model.set_callbacks(callbacks)
+
     # train model
     epochs = ARGS.max_train_epochs
+
 
 
     # helper tool to visualize the flow of the network and how the shape of the data changes from layer to layer
@@ -340,6 +345,9 @@ if __name__ == "__main__":
     tb = SummaryWriter()
     # create a single batch of tensor of images
     imgs, _ = next(iter(dataloaders))
+    for img in imgs:
+        print("max is ", torch.max(img))
+        print("min is ", torch.min(img))
     grid = make_grid(imgs)
     tb.add_image("input examples", grid)
     tb.add_graph(model, imgs)
