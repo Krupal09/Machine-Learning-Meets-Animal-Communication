@@ -5,7 +5,7 @@ import torch
 
 # define model
 class Autoencoder(nn.Module):
-    def __init__(self, nbottleneck, batch_size):
+    def __init__(self, nbottleneck):
         super(Autoencoder, self).__init__()
         self.encoder = nn.Sequential(
             collections.OrderedDict(

@@ -581,7 +581,7 @@ class Dataset(AudioDataset):
                     T.Compose(self.t_timestretch, self.t_pitchshift, self.t_compr_f),
                     min_length=seq_len,
                     return_original=True
-                )
+                ) # if return_original = True, both augmented and original specs are returned
             else:
                 self.t_addnoise = None
         self.t_compr_a = T.Amp2Db(min_level_db=DefaultSpecDatasetOps["min_level_db"])

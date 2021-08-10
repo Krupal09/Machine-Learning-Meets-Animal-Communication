@@ -49,3 +49,36 @@ class EarlyStoppingCriterion(object):
 
     def load_state_dict(self, state_dict):
         self.__dict__.update(state_dict)
+
+
+class EarlyStopping():
+    """
+    Early stopping to stop the training when the loss does not improve after
+    certain epochs.
+
+    Code from https://debuggercafe.com/using-learning-rate-scheduler-and-early-stopping-with-pytorch/
+    """
+    def __init__(self, patience=3, min_delta=0):
+        """
+        :param patience: how many epochs to wait before stopping when loss is
+               not improving
+        :param min_delta: minimum difference between new loss and old loss for
+               new loss to be considered as an improvement
+        """
+        self.patience = patience # cumulative number of times the validation loss does not improve during the whole training process
+        self.min_delta = min_delta # the minimum difference between the new loss and the best loss for the new loss to be considered an improvement
+        self.counter = 0 # keeps count of the number of times the current validation loss does not improve
+        self.best_loss = None
+        self.early_stop = False
+
+    def __call__(self, val_loss):
+        if self.best_loss == None:
+            self.best_loss = val_loss
+        elif self.best_loss - val_loss > self.min_delta:
+            self.best_loss = val_loss
+        elif self.best_loss - val_loss < self.min_delta:
+            self.counter += 1
+            print(f"INFO: Early stopping counter {self.counter} of {self.patience}")
+            if self.counter >= self.patience:
+                print('INFO: Early stopping')
+                self.early_stop = True

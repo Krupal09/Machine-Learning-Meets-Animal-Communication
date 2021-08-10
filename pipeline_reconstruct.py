@@ -18,16 +18,19 @@ import torch.optim as optim
 from torchvision.utils import save_image, make_grid
 from torch.utils.tensorboard import SummaryWriter
 import argparse
-from torchsample.callbacks import EarlyStopping
+#from torchsample.callbacks import EarlyStopping
+from torchsample.modules import ModuleTrainer
+
 import torchvision
 from torchvision import transforms
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader, random_split
 
 import numpy as np
 
 from numpy import random
 
 from datetime import datetime
+import time
 import os
 import sys
 import io
@@ -41,6 +44,7 @@ from data.audiodataset import (
     Dataset,
 )
 from models.plain_autoencoder import Autoencoder as autoencoder
+from utils.early_stopping import EarlyStopping
 
 parser = argparse.ArgumentParser()
 
@@ -69,13 +73,6 @@ parser.add_argument(
     type=str,
     default=None,
     help="Path to a directory with noise files used for data augmentation.",
-)
-
-parser.add_argument(
-    "--test_ae_data_dir",
-    type=str,
-    default=None,
-    help="Path to a directory with positive files used for testing autoencoder reconstructions after every couple of epochs.",
 )
 
 parser.add_argument(
@@ -131,8 +128,15 @@ parser.add_argument(
     "--beta1", type=float, default=0.5, help="beta1 for the adam optimizer."
 )
 
+parser.add_argument(
+    "--early-stopping", dest='early_stopping', action='store_true'
+)
+
 
 """ Input parameters """
+parser.add_argument(
+    "--filter_broken_audio", action="store_true", help="Filter by a minimum loudness using SoX (Sound exchange) toolkit (option could only be used if SoX is installed)."
+)
 
 parser.add_argument(
     "--sequence_len", type=int, default=1280, help="Sequence length in ms."
@@ -188,13 +192,43 @@ ARGS.device = torch.device("cuda") if ARGS.cuda else torch.device("cpu")
 Get audio all audio files from the given data directory except they are broken.
 discard the can_load_from_csv() of orcaspot
 """
-def get_audio_files(path):
-    audio_files = list(get_audio_files_from_dir(path))
+def get_audio_files():
+    audio_files = list(get_audio_files_from_dir(ARGS.data_dir))
     #log.info("Found {} audio files for training.".format(len(audio_files)))
     if len(audio_files) == 0:
         #log.close()
         exit(1)
     return audio_files
+
+#def get_audio_files():
+#    audio_files = None
+#    if input_data.can_load_from_csv():
+#        print("Found csv files in {}".format(ARGS.data_dir))
+#        #log.info("Found csv files in {}".format(ARGS.data_dir))
+#    else:
+#        print("Searching for audio files in {}".format(ARGS.data_dir))
+#        #log.debug("Searching for audio files in {}".format(ARGS.data_dir))
+#       if ARGS.filter_broken_audio:
+#            data_dir_ = pathlib.Path(ARGS.data_dir)
+#            audio_files = get_audio_files_from_dir(ARGS.data_dir)
+#            print("Moving possibly broken audio files to .bkp:")
+#            #log.debug("Moving possibly broken audio files to .bkp:")
+#            broken_files = get_broken_audio_files(audio_files, ARGS.data_dir)
+#            for f in broken_files:
+#                print(f)
+#                #log.debug(f)
+#                bkp_dir = data_dir_.joinpath(f).parent.joinpath(".bkp")
+#                bkp_dir.mkdir(exist_ok=True)
+#                f = pathlib.Path(f)
+#                data_dir_.joinpath(f).rename(bkp_dir.joinpath(f.name))
+#        audio_files = list(get_audio_files_from_dir(ARGS.data_dir))
+#        print("Found {} audio files for training.".format(len(audio_files)))
+#        #log.info("Found {} audio files for training.".format(len(audio_files)))
+#        if len(audio_files) == 0:
+#            #log.close()
+#            exit(1)
+#    return audio_files
+
 
 # create CSV of all training data (exc. noises for augmentation)
 #def createCSV(data_dir: str, files: list):
@@ -266,6 +300,69 @@ def save_decod_spec(spec, epoch):
 def module_output_to_numpy(tensor):
     return tensor.detach().to('cpu').numpy()
 
+def fit(model, train_dataloader, train_ds, optimizer, loss_fn, epoch, tb_writer):
+    print("Training")
+    model.train()
+    train_running_loss = 0.0
+    for train_specs, _ in train_dataloader:
+        train_specs = train_specs.to(ARGS.device)
+        optimizer.zero_grad()
+
+        # compute reconstructions
+        outputs = model(train_specs)
+
+        # compute training reconstruction loss
+        loss = loss_fn(outputs, train_specs)
+
+        # compute accumulated gradients
+        loss.backward()
+
+        # perform parameter update based on current gradients
+        optimizer.step()
+
+        # add the mini-batch training loss to epoch loss
+        # the value of total cost averaged across all training examples of the current batch
+        # loss.item()*data.size(0): total loss of the current batch (not averaged).
+        train_running_loss += loss.item() * train_specs.size(0)
+
+        # compute the epoch training loss
+    train_epoch_loss = train_running_loss / len(train_ds)
+    tb_writer.add_scalar("Loss/train", train_epoch_loss, epoch)
+    return train_epoch_loss
+
+
+def validate(model, val_dataloader, val_ds, loss_fn, tb_writer):
+    model.eval()
+    print("Validating")
+
+    val_running_loss = 0.0
+    with torch.no_grad():
+        counter = 0
+        for val_specs, _ in val_dataloader:
+            val_specs = val_specs.to(ARGS.device)
+            if counter == 0:
+                tb = SummaryWriter()
+                grid = make_grid(val_specs)
+                tb.add_image("Original at epoch - {}".format(epoch), grid)
+                tb.close()
+
+            outputs = model(val_specs)
+            if counter == 0:
+                tb = SummaryWriter()
+                grid = make_grid(outputs)
+                tb.add_image("Reconstructed at epoch - {}".format(epoch), grid)
+                tb.close()
+
+            loss = loss_fn(outputs, val_specs)
+
+            val_running_loss += loss.item() * val_specs.size(0)
+
+            counter += 1
+
+        val_epoch_loss = val_running_loss / len(val_ds)
+        tb_writer.add_scalar("Loss/validation", val_epoch_loss, epoch)
+        return val_epoch_loss
+
 
 if __name__ == "__main__":
 
@@ -282,8 +379,6 @@ if __name__ == "__main__":
 
     dataOpts = DefaultSpecDatasetOps
 
-    #print("n_fft is", dataOpts["n_fft"])
-
     sequence_len = int(
         float(ARGS.sequence_len) / 1000 * dataOpts["sr"] / dataOpts["hop_length"]
     )
@@ -291,13 +386,13 @@ if __name__ == "__main__":
     #print("sequence length is ", sequence_len, ARGS.sequence_len)
 
     # for variational autoencoder, could use splits to test how well the learned representation generalize
-    # split_fracs = {"train": .7, "val": .15, "test": .15}
-    # input_data = DatabaseCsvSplit(
+    #split_fracs = {"train": .8, "val": .1, "test": .1}
+    #input_data = DatabaseCsvSplit(
     #    split_fracs, working_dir=ARGS.data_dir, split_per_dir=True
     #)
 
-    audio_files = get_audio_files(ARGS.data_dir)
-    test_audio_files = get_audio_files(ARGS.test_ae_data_dir)
+    audio_files = get_audio_files()
+    #audio_files = get_audio_files(ARGS.data_dir)
 
     if ARGS.noise_dir:
         noise_files = [str(p) for p in pathlib.Path(ARGS.noise_dir).glob("*.wav")]
@@ -321,25 +416,16 @@ if __name__ == "__main__":
             noise_files=noise_files,
         )
 
-    test_dataset = Dataset(
-        file_names=test_audio_files,
-        working_dir=ARGS.test_ae_data_dir,
-        cache_dir=ARGS.cache_dir,
-        sr=dataOpts["sr"],
-        n_fft=dataOpts["n_fft"],
-        hop_length=dataOpts["hop_length"],
-        n_freq_bins=dataOpts["n_freq_bins"],
-        freq_compression=ARGS.freq_compression,
-        f_min=dataOpts["fmin"],
-        f_max=dataOpts["fmax"],
-        seq_len=sequence_len,
-        augmentation=ARGS.augmentation,
-        noise_files=noise_files,
-    )
+    print("going into splits")
+    train_size = int(0.9 * len(dataset))
+    val_size = len(dataset) - train_size
+    train_ds, val_ds = random_split(dataset, [train_size, val_size])
+    print("len of train_ds is", len(train_ds))
+    print("len of test_ds is", len(val_ds))
 
     #print("batch_size is ", ARGS.batch_size)
-    dataloaders = torch.utils.data.DataLoader(
-            dataset,
+    train_dataloader = torch.utils.data.DataLoader(
+            train_ds, #dataset,
             batch_size=ARGS.batch_size,
             shuffle=True,
             num_workers=ARGS.num_workers,
@@ -347,8 +433,8 @@ if __name__ == "__main__":
             pin_memory=True,
         )
 
-    test_dataloaders = torch.utils.data.DataLoader(
-        dataset,
+    val_dataloader = torch.utils.data.DataLoader(
+        val_ds,
         batch_size=ARGS.batch_size,
         shuffle=True,
         num_workers=ARGS.num_workers,
@@ -361,7 +447,7 @@ if __name__ == "__main__":
 
     # create a model from `AE` autoencoder class
     # load it to the specified device, either gpu or cpu
-    model = autoencoder(ARGS.n_bottleneck, ARGS.batch_size).to(ARGS.device)
+    model = autoencoder(ARGS.n_bottleneck).to(ARGS.device)
 
     #print("device is", ARGS.device)
 
@@ -373,6 +459,10 @@ if __name__ == "__main__":
     # mean-squared error loss
     loss_fn = nn.MSELoss()
 
+    if ARGS.early_stopping:
+        print("Initializing early stopping")
+        early_stopping = EarlyStopping()
+
     #callbacks = [EarlyStopping(monitor='loss_fn', patience=5)]
     #model.set_callbacks(callbacks)
 
@@ -383,21 +473,23 @@ if __name__ == "__main__":
     # usage: tensorboard --logdir=YOUR_PATH runs
     tb = SummaryWriter()
     # create a single batch of tensor of images
-    imgs, _ = next(iter(test_dataloaders))
+    imgs, _ = next(iter(train_dataloader))
     #for img in imgs:
         #print("max is ", torch.max(img))
         #print("min is ", torch.min(img))
     grid = make_grid(imgs)
     tb.add_image("input examples", grid)
     #tb.add_graph(model, imgs)
-    tb.close()
 
     print("training starts")
 
+    train_loss = []
+    val_loss = []
+    start = time.time()
 
     for epoch in range(ARGS.max_train_epochs):
-        running_loss = 0
-        print("Epoch ", epoch, "is running")
+        ##train_running_loss = 0.0
+        print("Epoch", epoch, "is running")
 
         #if epoch% 5 == 0:
             #hook_handles = []
@@ -410,8 +502,11 @@ if __name__ == "__main__":
                     #hook_handles.append(handle)
 
         #for batch_id, (specs,_) in enumerate(dataset):
-        for batch_id, (specs, _) in enumerate(dataloaders):
-            specs = specs.to(ARGS.device)
+        #for batch_id, (specs, _) in enumerate(train_dataloaders):
+        ##for train_specs, _ in train_dataloader:
+            #print(train_specs.shape)
+            #print("_ is ", _["ground_truth"].shape)
+            ##train_specs = train_specs.to(ARGS.device)
 
             #if batch_id == 0:
                 #tb = SummaryWriter()
@@ -435,49 +530,71 @@ if __name__ == "__main__":
 
             # reset the gradients back to zero
             # PyTorch accumulates gradients on subsequent backward passes
-            optimizer.zero_grad()
+            ##optimizer.zero_grad()
 
             # compute reconstructions
-            outputs = model(specs)
+            ##outputs = model(train_specs)
             #if batch_id == 0:
                 #tb.add_image("epoch_{}_batch_{}_reconstructed".format(epoch, batch_id), outputs)
                 #tb.close()
 
             # compute training reconstruction loss
-            train_loss = loss_fn(outputs, specs)
+            ##loss = loss_fn(outputs, train_specs)
 
             # compute accumulated gradients
-            train_loss.backward()
+            ##loss.backward()
 
             # perform parameter update based on current gradients
-            optimizer.step()
+            ##optimizer.step()
 
             # add the mini-batch training loss to epoch loss
             # the value of total cost averaged across all training examples of the current batch
             # loss.item()*data.size(0): total loss of the current batch (not averaged).
-            running_loss += train_loss.item() * specs.size(0)
+            ##train_running_loss += loss.item() * train_specs.size(0)
 
-        if epoch % 5 == 0:
+        #if epoch % 5 == 0:
             #for handle in hook_handles:
                 #handle.remove()
-            print("Evaluating...")
-            test_imgs, _ = next(iter(test_dataloaders))
-            test_imgs = test_imgs.to(ARGS.device)
-            recon_test = model(test_imgs)
-            tb = SummaryWriter()
-            grid = make_grid(imgs)
-            tb.add_image("Epoch - {}".format(epoch), grid)
+            #print("Evaluating...")
+            #test_imgs, _ = next(iter(test_dataloaders))
+            #test_imgs = test_imgs.to(ARGS.device)
+            #recon_test = model(test_imgs)
+            #tb = SummaryWriter()
+            #grid = make_grid(imgs)
+            #tb.add_image("Epoch - {}".format(epoch), grid)
             # tb.add_graph(model, imgs)
-            tb.close()
-            print("Finished saving reconstructed...")
+            #tb.close()
+            #print("Finished saving reconstructed...")
 
-        # compute the epoch training loss
-        loss = running_loss / len(audio_files)
+        train_epoch_loss = fit(
+            model, train_dataloader, train_ds, optimizer, loss_fn, epoch, tb
+        )
+        tb.flush()
+        train_loss.append(train_epoch_loss)
 
         # display the epoch training loss
-        #training_loss.append(loss)
-        print("epoch : {}/{}, recon loss = {:.8f}".format(epoch + 1, epochs, loss))
-        
+        print("epoch : {}/{}, recon loss = {:.8f}".format(epoch + 1, epochs, train_epoch_loss))
+
+        val_epoch_loss = validate(
+            model, val_dataloader, val_ds, loss_fn, tb
+        )
+        tb.flush()
+        val_loss.append(val_epoch_loss)
+        print("epoch : {}/{}, val loss = {:.8f}".format(epoch + 1, epochs, val_epoch_loss))
+
+        if ARGS.early_stopping:
+            early_stopping(val_epoch_loss)
+            if early_stopping.early_stop:
+                break
+
+        #print(f"Train Loss: {train_epoch_loss:.4f}")
+        #print(f"Val Loss: {val_epoch_loss:.4f}")
+
+    end = time.time()
+    print(f"Training time: {(end - start)/60:.3f} minutes")
+
+    tb.close()
+
         # save output every 5 epoch
         #if epoch % 5 == 0:
             #print(outputs)
@@ -486,14 +603,14 @@ if __name__ == "__main__":
     # concatenate all the outputs we saved to get the the activations for each layer for the whole dataset
     #activations = {name: torch.cat(acts, 0) for layer, acts in activations.items()}
 
-    plt.figure(figsize=(20,20), frameon=False)
-    for layer_epoch, act in activations.items():
+    #plt.figure(figsize=(20,20), frameon=False)
+    #for layer_epoch, act in activations.items():
         # just print out the sizes of the saved activations as a sanity check
         # print(layer_epoch, len(act))
 
         # instead of plotting the activations of the entire dataset at this layer and this epoch
         # plot the last 16 activations
-        fig, axarr = plt.subplots(4,4)
+        #fig, axarr = plt.subplots(4,4)
         #for idx in range(16):
             #axarr[idx].imshow(act[-idx].numpy())
 
