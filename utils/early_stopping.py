@@ -58,7 +58,7 @@ class EarlyStopping():
 
     Code from https://debuggercafe.com/using-learning-rate-scheduler-and-early-stopping-with-pytorch/
     """
-    def __init__(self, patience=3, min_delta=0):
+    def __init__(self, patience=3, min_delta=0.0001):
         """
         :param patience: how many epochs to wait before stopping when loss is
                not improving

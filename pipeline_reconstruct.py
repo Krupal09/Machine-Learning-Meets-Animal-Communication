@@ -300,7 +300,7 @@ def save_decod_spec(spec, epoch):
 def module_output_to_numpy(tensor):
     return tensor.detach().to('cpu').numpy()
 
-def fit(model, train_dataloader, train_ds, optimizer, loss_fn, epoch, tb_writer):
+def fit(model, train_dataloader, train_ds, optimizer, loss_fn):
     print("Training")
     model.train()
     train_running_loss = 0.0
@@ -327,7 +327,6 @@ def fit(model, train_dataloader, train_ds, optimizer, loss_fn, epoch, tb_writer)
 
         # compute the epoch training loss
     train_epoch_loss = train_running_loss / len(train_ds)
-    tb_writer.add_scalar("Loss/train", train_epoch_loss, epoch)
     return train_epoch_loss
 
 
@@ -341,17 +340,17 @@ def validate(model, val_dataloader, val_ds, loss_fn, tb_writer):
         for val_specs, _ in val_dataloader:
             val_specs = val_specs.to(ARGS.device)
             if counter == 0:
-                tb = SummaryWriter()
-                grid = make_grid(val_specs)
-                tb.add_image("Original at epoch - {}".format(epoch), grid)
-                tb.close()
+                #tb = SummaryWriter()
+                #grid = make_grid(val_specs)
+                tb_writer.add_images("Original", val_specs, epoch)
+                #tb.close()
 
             outputs = model(val_specs)
             if counter == 0:
-                tb = SummaryWriter()
-                grid = make_grid(outputs)
-                tb.add_image("Reconstructed at epoch - {}".format(epoch), grid)
-                tb.close()
+                #tb = SummaryWriter()
+                #grid = make_grid(outputs)
+                tb_writer.add_images("Reconstructed", outputs, epoch)
+                #tb.close()
 
             loss = loss_fn(outputs, val_specs)
 
@@ -360,7 +359,6 @@ def validate(model, val_dataloader, val_ds, loss_fn, tb_writer):
             counter += 1
 
         val_epoch_loss = val_running_loss / len(val_ds)
-        tb_writer.add_scalar("Loss/validation", val_epoch_loss, epoch)
         return val_epoch_loss
 
 
@@ -469,6 +467,12 @@ if __name__ == "__main__":
     # train model
     epochs = ARGS.max_train_epochs
 
+    #current_time = datetime.now().strftime("%Y%m%d-%H%M%S")
+    #train_log_dir = 'logs/' + current_time + '/train'
+    #val_log_dir = 'logs/' + current_time + '/validation'
+    #train_summary_writer = tf.summary
+
+
     # helper tool to visualize the flow of the network and how the shape of the data changes from layer to layer
     # usage: tensorboard --logdir=YOUR_PATH runs
     tb = SummaryWriter()
@@ -567,9 +571,9 @@ if __name__ == "__main__":
             #print("Finished saving reconstructed...")
 
         train_epoch_loss = fit(
-            model, train_dataloader, train_ds, optimizer, loss_fn, epoch, tb
+            model, train_dataloader, train_ds, optimizer, loss_fn
         )
-        tb.flush()
+        tb.add_scalar("Loss/train", train_epoch_loss, epoch)
         train_loss.append(train_epoch_loss)
 
         # display the epoch training loss
@@ -578,7 +582,7 @@ if __name__ == "__main__":
         val_epoch_loss = validate(
             model, val_dataloader, val_ds, loss_fn, tb
         )
-        tb.flush()
+        tb.add_scalar("Loss/validation", val_epoch_loss, epoch)
         val_loss.append(val_epoch_loss)
         print("epoch : {}/{}, val loss = {:.8f}".format(epoch + 1, epochs, val_epoch_loss))
 
@@ -593,6 +597,7 @@ if __name__ == "__main__":
     end = time.time()
     print(f"Training time: {(end - start)/60:.3f} minutes")
 
+    tb.flush()
     tb.close()
 
         # save output every 5 epoch
@@ -610,7 +615,7 @@ if __name__ == "__main__":
 
         # instead of plotting the activations of the entire dataset at this layer and this epoch
         # plot the last 16 activations
-        #fig, axarr = plt.subplots(4,4)
+        # fig, axarr = plt.subplots(4,4)
         #for idx in range(16):
             #axarr[idx].imshow(act[-idx].numpy())
 
