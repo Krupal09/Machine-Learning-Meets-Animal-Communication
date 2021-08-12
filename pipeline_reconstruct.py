@@ -24,7 +24,7 @@ from torchsample.modules import ModuleTrainer
 import torchvision
 from torchvision import transforms
 from torch.utils.data import Dataset, DataLoader, random_split
-from torchsummary import summary
+from torchsummary import summary # model summary
 
 import numpy as np
 
@@ -628,6 +628,7 @@ if __name__ == "__main__":
 
     tb.flush()
     tb.close()
+    log.close()
 
         # save output every 5 epoch
         #if epoch % 5 == 0:
