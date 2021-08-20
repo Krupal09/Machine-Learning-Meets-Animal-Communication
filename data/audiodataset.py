@@ -7,7 +7,7 @@ Adapted and commented by R.X. Cheng
 Last modified:
 """
 
-import re
+import re # RegEx
 import os
 import sys
 import csv
@@ -504,6 +504,7 @@ class Dataset(AudioDataset):
             )
         self.freq_compression = freq_compression
 
+        # combine a RegExp pattern into pattern objects for pattern matching
         self.possible_call_labels = re.compile(
             "|".join(
                 [
@@ -544,6 +545,7 @@ class Dataset(AudioDataset):
             self.t_spectrogram = T.Compose(spec_transforms)
         else:
             # where .spec is created and stored
+            # n_fft, hop_length: meta in spec_dict
             self.t_spectrogram = T.CachedSpectrogram(
                 cache_dir=cache_dir,
                 spec_transform=T.Compose(spec_transforms),
@@ -614,9 +616,9 @@ class Dataset(AudioDataset):
         if (
             self.augmentation and self.t_addnoise is not None
         ):
-            sample, ground_truth = self.t_addnoise(sample)
+            sample, ground_truth = self.t_addnoise(sample) # spectrogram_aug (add_noise), spectrogram
             ground_truth = self.t_compr_a(ground_truth) # amp to db-scale
-            ground_truth = self.t_norm(ground_truth)
+            ground_truth = self.t_norm(ground_truth) # normalize db to (0,1)
         else:
             ground_truth = None
         sample = self.t_compr_a(sample) # amp to db-scale
@@ -628,7 +630,7 @@ class Dataset(AudioDataset):
             ground_truth = stacked[1].unsqueeze(0)
         else:
             sample = self.t_subseq(sample)
-        label = self.load_label(file)
+        label = self.load_label(file) # label dict, with keys "file_name"(str), "call" (bool), "ground_truth"
         if ground_truth is not None:
             label["ground_truth"] = ground_truth
         return sample, label
@@ -652,7 +654,7 @@ class Dataset(AudioDataset):
     def load_label(self, file_name: str):
         label = dict()
         label["file_name"] = file_name
-        label["call"] = self.is_call(file_name)
+        label["call"] = self.is_call(file_name) # bool
         return label
 
     """
