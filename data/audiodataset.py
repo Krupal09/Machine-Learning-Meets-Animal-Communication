@@ -477,7 +477,7 @@ class Dataset(AudioDataset):
         n_freq_bins=256, # determines the width of the image
         f_min=0,
         f_max=18000,
-        seq_len=640, # 128; shd be adjusted together with sequence_len in class StridedAudioDataset (called by predict.py)
+        seq_len=128, # shd be adjusted together with sequence_len in class StridedAudioDataset (called by predict.py)
         augmentation=False,
         noise_files=[],
         *args,
@@ -583,7 +583,7 @@ class Dataset(AudioDataset):
                     T.Compose(self.t_timestretch, self.t_pitchshift, self.t_compr_f),
                     min_length=seq_len,
                     return_original=True
-                )
+                ) # if return_original = True, both augmented and original specs are returned
             else:
                 self.t_addnoise = None
         self.t_compr_a = T.Amp2Db(min_level_db=DefaultSpecDatasetOps["min_level_db"])

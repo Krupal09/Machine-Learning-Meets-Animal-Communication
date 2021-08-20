@@ -1,5 +1,7 @@
 import torch.nn as nn
 import collections
+import torch
+
 
 # define model
 class Autoencoder(nn.Module):
@@ -42,11 +44,13 @@ class Autoencoder(nn.Module):
 
 
     def forward(self, x):
-        #print("input: ", x.shape)
+        #print("input: ", x.size())
+        #x = torch.squeeze(x)
         x = x.view(x.size(0), -1)
+        #print("the reshaped x is of ", x.shape)
         x = self.encoder(x)
         x = self.decoder(x)
-        x = x.view(-1, 128, 256)
+        x = x.view(-1, 1, 128, 256)
         #print("output: ", x.shape)
         return x
 
