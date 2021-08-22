@@ -653,6 +653,7 @@ class Dataset(AudioDataset):
         label = dict()
         label["file_name"] = file_name
         label["call"] = self.is_call(file_name)
+        print("label[call]", label["call"])
         return label
 
     """
@@ -661,6 +662,8 @@ class Dataset(AudioDataset):
     """
     def is_call(self, file_name: str):
         _l = self._label_from_filename(file_name)
+        print("_l is", _l)
+        print("self.possible_nocall_labels is ", self.possible_nocall_labels)
         if bool(self.possible_nocall_labels.search(_l)):
             return False
         elif bool(self.possible_call_labels.search(_l)):
