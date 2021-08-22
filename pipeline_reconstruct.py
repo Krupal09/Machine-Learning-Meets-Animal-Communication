@@ -7,10 +7,10 @@ Then it performs clustering on the bottleneck features and generates a visualiza
 Finally it save a csv file with the filename, bottleneck neuron values and the cluster label
 '''
 
-
-#import matplotlib.pyplot as plt
-import pickle
+import os
+import collections
 import pathlib
+import json
 
 import torch
 import torch.nn as nn
@@ -18,25 +18,9 @@ import torch.optim as optim
 from torchvision.utils import save_image, make_grid
 from torch.utils.tensorboard import SummaryWriter
 import argparse
-#from torchsample.callbacks import EarlyStopping
-from torchsample.modules import ModuleTrainer
 
-import torchvision
-from torchvision import transforms
 from torch.utils.data import Dataset, DataLoader, random_split
 from torchsummary import summary # model summary
-
-
-import numpy as np
-
-from numpy import random
-
-from datetime import datetime
-import time
-import os
-import sys
-import io
-import collections
 
 from data.audiodataset import (
     get_audio_files_from_dir,
@@ -51,7 +35,6 @@ from models.residual_encoder import ResidualEncoder as Encoder
 from models.residual_decoder import DefaultDecoderOpts
 from models.residual_decoder import ResidualDecoder as Decoder
 from collections import OrderedDict
-from utils.early_stopping import EarlyStopping
 from utils.logging import Logger
 from trainer import Trainer
 
@@ -116,7 +99,7 @@ parser.add_argument(
 parser.add_argument(
     "--summary_dir",
     type=str,
-    help="The directory to store the tensorboard summaries.",
+    help="The directory to store the tensorboard and delve summaries.",
 )
 
 
@@ -530,6 +513,7 @@ if __name__ == "__main__":
     metric_mode = "min"
 
     trainer = Trainer(
+        #model_name=ARGS.model,
         model=model,
         logger=log,
         prefix=ARGS.model,
@@ -566,12 +550,14 @@ if __name__ == "__main__":
 
     if ARGS.model == "plain_ae":
        log.debug("Save plain_ae model is not supported at the moment.")
-    else ARGS.model == "conv_ae":
+    elif ARGS.model == "conv_ae":
         encoder = model.encoder
         decoder = model.decoder
         save_model(
             encoder, encoderOpts, decoder, decoderOpts, dataOpts, path
         )
+    else:
+        log.debug("The model type you would like to save is not supported at the moment. Pls implement.")
 
     log.close()
 

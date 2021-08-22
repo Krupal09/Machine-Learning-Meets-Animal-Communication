@@ -35,6 +35,7 @@ class Trainer:
             n_summaries: int=4, #
             input_shape: tuple=None,
             start_scratch: bool=False,
+            #model_name: str="model",
     ):
         """
         Class which implements network training, validation and testing as well as writing checkpoints, logs, summaries, and saving the final model.
@@ -42,6 +43,7 @@ class Trainer:
         :param Union[str, None] checkpoint_dir: the type is either str or None (default: None)
         :param int n_summaries: number of images as samples at different phases to visualize on tensorboard
         """
+        #self.model_name=model_name
         self.model = model
         self.logger = logger
         self.prefix = prefix
@@ -54,7 +56,7 @@ class Trainer:
                 time=time.strftime("%y-%m-%d-%H-%M", time.localtime()),
                 host=os.uname()[1],
             )
-            summary_dir = os.path.join(summary_dir, run_name)
+            self.summary_dir = os.path.join(summary_dir, run_name)
 
         self.n_summaries = n_summaries
         self.writer = SummaryWriter(summary_dir)
@@ -102,7 +104,7 @@ class Trainer:
         self.model = self.model.to(device)
 
         # initalize delve
-        self.tracker = CheckLayerSat(ARGS.model, save_to=ARGS.log_dir, modules=model, device=device)
+        self.tracker = CheckLayerSat(self.summary_dir, save_to="plotcsv", modules=self.model, device=device)
 
         best_model = copy.deepcopy(self.model.state_dict())
         best_metric = 0.0 if val_metric_mode == "max" else float("inf")
