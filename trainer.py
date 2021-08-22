@@ -301,7 +301,7 @@ class Trainer:
             data_loading_time = m.Sum(torch.device("cpu"))
 
             for i, (val_specs, label) in enumerate(val_dataloader):
-                val_specs = val_specs.to(ARGS.device)
+                val_specs = val_specs.to(device)
                 if "call" in label:
                     call_label = label["call"].to(device, non_blocking=True, dtype=torch.int64)
 
