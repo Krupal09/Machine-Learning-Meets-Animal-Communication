@@ -185,7 +185,7 @@ class Trainer:
                                     "best_metric": best_metric,
                                     "best_model": best_model,
                                     "optState": optimizer.state_dict(),
-                                    "earlyStopping": earlyStopping.state_dict(),
+                                    "earlyStopping": early_stopping.state_dict(),
                                 },
                             }
                         )
