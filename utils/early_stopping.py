@@ -9,8 +9,8 @@ class EarlyStoppingCriterion(object):
 
     def __init__(self, patience, mode, min_delta=0.0):
         """
-        :param patience: how many epochs to wait before stopping when loss is
-               not improving; cumulative number of times the validation loss does not improve during the whole training process
+        :param patience: how many epochs to wait before stopping when loss is not improving;
+                cumulative number of times the validation loss does not improve during the whole training process
         :param min_delta: minimum difference between new loss and old loss for
                new loss to be considered as an improvement
         :param mode: whether the objective of the chosen metric is to increase (maximize or ‘max‘)
@@ -51,8 +51,9 @@ class EarlyStoppingCriterion(object):
         self.__dict__.update(state_dict)
 
 
-class EarlyStopping():
+class EarlyStopping:
     """
+    (not used in Trainer)
     Early stopping to stop the training when the loss does not improve after
     certain epochs.
 

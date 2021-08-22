@@ -157,7 +157,7 @@ Converts a given audio to a spectrogram, cache and store the spectrograms.
 called by audiodataset.py during training
 """
 class CachedSpectrogram(object):
-    version = 4
+    version = 4 # part of spec_dict
 
     def __init__(
         self, cache_dir, spec_transform, file_reader=None, file_writer=None, **meta
@@ -178,7 +178,7 @@ class CachedSpectrogram(object):
     def get_cached_name(self, file_name):
         """Return the abs path of the cached spectrogram """
         cached_spec_n = os.path.splitext(os.path.basename(file_name))[0] + ".spec"
-        dir_structure = os.path.dirname(file_name).replace(r"/", "_") + "_"  # why: r"/" not "/"
+        dir_structure = os.path.dirname(file_name).replace(r"/", "_") + "_"  # r"/": blackslash is treated literally
         cached_spec_n = dir_structure + cached_spec_n
         if not os.path.isabs(cached_spec_n):
             cached_spec_n = os.path.join(self.cache_dir, cached_spec_n)
@@ -189,8 +189,10 @@ class CachedSpectrogram(object):
          where .spec is computed and created
          """
         cached_spec_n = self.get_cached_name(fn)
+        # if the file was not cached before, do _compute_and_cache
         if not os.path.isfile(cached_spec_n):
             return self._compute_and_cache(fn)
+        # otherwise, read the existing cached file
         try:
             data = self.reader(cached_spec_n)
             # torch.load() allows to load tensors;
@@ -198,7 +200,7 @@ class CachedSpectrogram(object):
             spec_dict = torch.load(io.BytesIO(data), map_location="cpu")  # load the tensors to CPU
         except (EOFError, RuntimeError):
             return self._compute_and_cache(fn)
-        # keys in spec_dict: "v", "data"
+        # keys in spec_dict: "v"(version), "data"(stft), meta.items() - n_fft, hop_length
         if not (
             "v" in spec_dict
             and spec_dict["v"] == self.version
@@ -410,13 +412,13 @@ class RandomAddNoise(object):
         min_length=0,
         min_snr=12,
         max_snr=-3,
-        return_original=False,
+        return_original=False, # in audiodataset.py: return_original=True
     ):
         if not noise_files:
             raise ValueError("No noise files found")
         self.noise_files = noise_files
         self.t_spectrogram = spectrogram_transform
-        self.noise_file_locks = {file: Lock() for file in noise_files}
+        self.noise_file_locks = {file: Lock() for file in noise_files} # multiprocessing, lock
         self.transform = transform
         self.min_length = min_length
         self.t_pad = PaddedSubsequenceSampler(sequence_length=min_length, dim=1)
