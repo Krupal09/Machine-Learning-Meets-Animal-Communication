@@ -176,6 +176,7 @@ class Trainer:
                     if val_comp(val_result, best_metric):
                         best_metric = val_result # update best_metric with the loss (smaller than previous)
                         best_model = copy.deepcopy(self.model.state_dict())
+                        """previously, deadlock occurred, which seemed to be related to cp. comment self.cp.write() to see if freezing goes away."""
                         # write checkpoint
                         self.cp.write(
                             {

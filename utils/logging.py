@@ -5,7 +5,7 @@ Institution: Friedrich-Alexander-University Erlangen-Nuremberg, Department of Co
 Last Access: 12.12.2019
 """
 
-import logging
+import logging # https://docs.python.org/3/howto/logging.html
 import logging.handlers
 import os
 import queue
@@ -19,10 +19,12 @@ class Singleton(type):
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
-"""
-Logger in order to track training, validation, and testing of the network
-"""
+
 class Logger(metaclass=Singleton):
+    """
+    Logger in order to track training, validation, and testing of the network
+    """
+
     def __init__(self, name, debug=False, log_dir=None, do_log_name=False):
         level = logging.DEBUG if debug else logging.INFO
         fmt = "%(asctime)s"
@@ -66,33 +68,34 @@ class Logger(metaclass=Singleton):
     def error(self, msg, *args, **kwargs):
         self._logger.error(msg, *args, **kwargs)
 
-    def epoch(
-        self,
-        phase,
-        epoch,
-        num_epochs,
-        loss,
-        accuracy=None,
-        f1_score=None,
-        precision=None,
-        recall=None,
-        lr=None,
-        epoch_time=None,
-    ):
-        s = "{}|{:03d}/{:d}|loss:{:0.3f}".format(
-            phase.upper().rjust(5, " "), epoch, num_epochs, loss
-        )
-        if accuracy is not None:
-            s += "|acc:{:0.3f}".format(accuracy)
-        if f1_score is not None:
-            s += "|f1:{:0.3f}".format(f1_score)
-        if precision is not None:
-            s += "|pr:{:0.3f}".format(precision)
-        if recall is not None:
-            s += "|re:{:0.3f}".format(recall)
-        if lr is not None:
-            s += "|lr:{:0.2e}".format(lr)
-        if epoch_time is not None:
-            s += "|t:{:0.1f}".format(epoch_time)
+    """Rachael: I don't think the below method is used in the whole pipeline. Otherwise, uncomment the code."""
+    #def epoch(
+    #    self,
+    #    phase,
+    #    epoch,
+    #    num_epochs,
+    #    loss,
+    #    accuracy=None,
+    #    f1_score=None,
+    #    precision=None,
+    #    recall=None,
+    #    lr=None,
+    #    epoch_time=None,
+    #):
+    #    s = "{}|{:03d}/{:d}|loss:{:0.3f}".format(
+    #        phase.upper().rjust(5, " "), epoch, num_epochs, loss
+    #    )
+    #    if accuracy is not None:
+    #        s += "|acc:{:0.3f}".format(accuracy)
+    #    if f1_score is not None:
+    #        s += "|f1:{:0.3f}".format(f1_score)
+    #    if precision is not None:
+    #        s += "|pr:{:0.3f}".format(precision)
+    #    if recall is not None:
+    #        s += "|re:{:0.3f}".format(recall)
+    #    if lr is not None:
+    #        s += "|lr:{:0.2e}".format(lr)
+    #    if epoch_time is not None:
+    #        s += "|t:{:0.1f}".format(epoch_time)
 
-        self._logger.info(s)
+    #    self._logger.info(s)

@@ -137,7 +137,7 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    "--num_workers", type=int, default=4, help="Number of workers used in data-loading"
+    "--num_workers", type=int, default=4, help="Number of processes to load and process each batch in the background, while the main training loop is busy"
 )
 
 parser.add_argument(
@@ -439,8 +439,8 @@ if __name__ == "__main__":
         float(ARGS.sequence_len) / 1000 * dataOpts["sr"] / dataOpts["hop_length"]
     )
     log.debug("Training with sequence length: {}".format(sequence_len))
-    input_shape = (ARGS.batch_size, 1, dataOpts["n_freq_bins"], sequence_len)  # (256, 128)
-    log.debug("input shape is {}".format(input_shape))
+    #input_shape = (ARGS.batch_size, 1, dataOpts["n_freq_bins"], sequence_len)  # (256, 128)
+    #log.debug("input shape is {}".format(input_shape))
 
 
     # Pre-processing is carried out --> input to the network should be (batch_size, 128 x 256)
@@ -484,7 +484,7 @@ if __name__ == "__main__":
         batch_size=ARGS.batch_size,
         shuffle=True,
         num_workers=ARGS.num_workers,
-        drop_last=True,
+        drop_last=False,
         pin_memory=True,
     )
 
@@ -549,7 +549,7 @@ if __name__ == "__main__":
     path = os.path.join(ARGS.model_dir, "{}_model.pk".format(ARGS.model))
 
     if ARGS.model == "plain_ae":
-       log.debug("Save plain_ae model is not supported at the moment.")
+       log.error("Save plain_ae model is not supported at the moment.")
     elif ARGS.model == "conv_ae":
         encoder = model.encoder
         decoder = model.decoder
@@ -557,7 +557,7 @@ if __name__ == "__main__":
             encoder, encoderOpts, decoder, decoderOpts, dataOpts, path
         )
     else:
-        log.debug("The model type you would like to save is not supported at the moment. Pls implement.")
+        log.error("The model type you would like to save is not supported at the moment. Pls implement.")
 
     log.close()
 
