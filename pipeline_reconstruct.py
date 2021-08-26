@@ -470,6 +470,12 @@ if __name__ == "__main__":
     log.info("{} audio files in val_ds".format(len(val_ds)))
 
     #print("batch_size is ", ARGS.batch_size)
+    dataloader = torch.utils.data.DataLoader(
+            dataset,
+            batch_size=ARGS.batch_size,
+            num_workers=ARGS.num_workers,
+            pin_memory=True,
+        )
     train_dataloader = torch.utils.data.DataLoader(
             train_ds, #dataset,
             batch_size=ARGS.batch_size,
@@ -559,6 +565,54 @@ if __name__ == "__main__":
     else:
         log.error("The model type you would like to save is not supported at the moment. Pls implement.")
 
+    """
+    Clustering for convolutional autoencoder :
+    * Iterate through the whole dataset(both training and validation) passing them 
+      through only encoder to get bottleneck vectors for each data point.
+    * Cluster these bottleneck vectors using unsupervised clustering methods like 
+      Kmeans or GaussianMixture modeling.
+    """
+    import numpy as np
+    from sklearn.cluster import KMeans
+    # local system hangs while processing GMM so commented out for now
+    #from sklearn.mixture import GaussianMixture 
+
+    file_names = []
+    bottleneck_outputs = []
+    
+    with torch.no_grad():
+        for i, (input_specs, label) in enumerate(dataloader):
+            
+            # remove file path to have only file name, ex : ['path/to/directory/file_1.wav']
+            file_name = str(label['file_name'])[::-1] # reverse string
+            file_name = file_name.split("/")[0]
+            file_name = file_name[::-1].split("'")[0] # align it back to the right order
+            file_names.append(file_name)     
+            #log.info("File-name : {}".format(file_name))
+           
+            input_specs = input_specs.to(device=ARGS.device)           
+            bottleneck_output = model.encoder(input_specs)
+            bottleneck_output = np.reshape(bottleneck_output.detach().numpy(), newshape=(-1))
+            bottleneck_outputs.append(bottleneck_output)
+            
+    # add ARGS for number of clusters
+    km = KMeans(n_clusters=2, random_state=0)
+    #gm = GaussianMixture(n_components=2, random_state=0)
+
+    pred_km = km.fit_predict(bottleneck_outputs)
+    #pred_gm = gm.fit_predict(bottleneck_outputs) 
+
+    log.info("predictions : {}".format(pred_km))
+    print("Cluster centers of Kmeans : ",km.cluster_centers_)
+
+    #log.info("predictions : {}".format(pred_gm)) 
+    #print("Cluster centers of GaussianMixture : {:.8f}".format(gm.means_))
+            
+    # print file names with respective cluster numbers
+    for i in range(len(dataloader)):
+        log.info("file name : {}, predicted cluster - Kmeans : {}".format(file_names[i], pred_km[i]))
+        #log.info("file name : {}, predicted cluster - GaussianMixture : {}".format(file_names[i], pred_gm[i]))        
+        
     log.close()
 
     """Leftover from previous trials. Could be removed when finalizing the script"""
