@@ -573,6 +573,7 @@ if __name__ == "__main__":
       Kmeans or GaussianMixture modeling.
     """
     import numpy as np
+    import pandas as pd
     from sklearn.cluster import KMeans
     # local system hangs while processing GMM so commented out for now
     #from sklearn.mixture import GaussianMixture 
@@ -607,12 +608,20 @@ if __name__ == "__main__":
 
     #log.info("predictions : {}".format(pred_gm)) 
     #print("Cluster centers of GaussianMixture : {:.8f}".format(gm.means_))
-            
+    
+    df = pd.DataFrame( columns = ["filename"] + ["cluster_number"] )
+    
     # print file names with respective cluster numbers
     for i in range(len(dataloader)):
         log.info("file name : {}, predicted cluster - Kmeans : {}".format(file_names[i], pred_km[i]))
         #log.info("file name : {}, predicted cluster - GaussianMixture : {}".format(file_names[i], pred_gm[i]))        
         
+        df = df.append( dict( zip( df.columns, [file_names[i]] + [pred_km[i]] ) ), ignore_index=True )     
+    
+    summary_dir = ARGS.summary_dir
+    if summary_dir is not None:
+        df.to_csv(summary_dir + "/Kmeans_clusters")
+    
     log.close()
 
     """Leftover from previous trials. Could be removed when finalizing the script"""
