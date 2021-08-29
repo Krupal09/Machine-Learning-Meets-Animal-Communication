@@ -22,6 +22,14 @@ import argparse
 from torch.utils.data import Dataset, DataLoader, random_split
 from torchsummary import summary # model summary
 
+import numpy as np
+import pandas as pd
+from sklearn.cluster import KMeans
+#local system hangs while processing GMM so commented out for now
+from sklearn.mixture import GaussianMixture
+import matplotlib as plt
+
+
 from data.audiodataset import (
     get_audio_files_from_dir,
     get_broken_audio_files,
@@ -37,6 +45,7 @@ from models.residual_decoder import ResidualDecoder as Decoder
 from collections import OrderedDict
 from utils.logging import Logger
 from trainer import Trainer
+#from clustering import Elbow, GapStatistics
 
 parser = argparse.ArgumentParser()
 
@@ -225,6 +234,7 @@ parser.add_argument(
     default=None,
     help="Use max pooling after the initial convolution layer. For details, check residual_encoder.py",
 )
+
 
 ARGS = parser.parse_args()
 ARGS.cuda = torch.cuda.is_available() and ARGS.cuda # check if both hardware and user's intention of using cuda
@@ -564,63 +574,6 @@ if __name__ == "__main__":
         )
     else:
         log.error("The model type you would like to save is not supported at the moment. Pls implement.")
-
-    """
-    Clustering for convolutional autoencoder :
-    * Iterate through the whole dataset(both training and validation) passing them 
-      through only encoder to get bottleneck vectors for each data point.
-    * Cluster these bottleneck vectors using unsupervised clustering methods like 
-      Kmeans or GaussianMixture modeling.
-    """
-    import numpy as np
-    import pandas as pd
-    from sklearn.cluster import KMeans
-    # local system hangs while processing GMM so commented out for now
-    #from sklearn.mixture import GaussianMixture 
-
-    file_names = []
-    bottleneck_outputs = []
-    
-    with torch.no_grad():
-        for i, (input_specs, label) in enumerate(dataloader):
-            
-            # remove file path to have only file name, ex : ['path/to/directory/file_1.wav']
-            file_name = str(label['file_name'])[::-1] # reverse string
-            file_name = file_name.split("/")[0]
-            file_name = file_name[::-1].split("'")[0] # align it back to the right order
-            file_names.append(file_name)     
-            #log.info("File-name : {}".format(file_name))
-           
-            input_specs = input_specs.to(device=ARGS.device)           
-            bottleneck_output = model.encoder(input_specs)
-            bottleneck_output = np.reshape(bottleneck_output.detach().numpy(), newshape=(-1))
-            bottleneck_outputs.append(bottleneck_output)
-            
-    # add ARGS for number of clusters
-    km = KMeans(n_clusters=2, random_state=0)
-    #gm = GaussianMixture(n_components=2, random_state=0)
-
-    pred_km = km.fit_predict(bottleneck_outputs)
-    #pred_gm = gm.fit_predict(bottleneck_outputs) 
-
-    log.info("predictions : {}".format(pred_km))
-    print("Cluster centers of Kmeans : ",km.cluster_centers_)
-
-    #log.info("predictions : {}".format(pred_gm)) 
-    #print("Cluster centers of GaussianMixture : {:.8f}".format(gm.means_))
-    
-    df = pd.DataFrame( columns = ["filename"] + ["cluster_number"] )
-    
-    # print file names with respective cluster numbers
-    for i in range(len(dataloader)):
-        log.info("file name : {}, predicted cluster - Kmeans : {}".format(file_names[i], pred_km[i]))
-        #log.info("file name : {}, predicted cluster - GaussianMixture : {}".format(file_names[i], pred_gm[i]))        
-        
-        df = df.append( dict( zip( df.columns, [file_names[i]] + [pred_km[i]] ) ), ignore_index=True )     
-    
-    summary_dir = ARGS.summary_dir
-    if summary_dir is not None:
-        df.to_csv(summary_dir + "/Kmeans_clusters")
     
     log.close()
 
