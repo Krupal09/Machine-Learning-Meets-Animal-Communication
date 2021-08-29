@@ -9,6 +9,11 @@ Clustering for convolutional autoencoder :
 * Cluster these bottleneck vectors using unsupervised clustering methods like
   Kmeans or GaussianMixture modeling.
 
+Online resources we find useful during implementation
+Methods for selecting the optimal number of clusters: https://towardsdatascience.com/cheat-sheet-to-implementing-7-methods-for-selecting-optimal-number-of-clusters-in-python-898241e1d6ad
+Gap statistics intro: https://glowingpython.blogspot.com/2019/01/a-visual-introduction-to-gap-statistics.html
+KMeans, elbow and Silhouette: https://realpython.com/k-means-clustering-python/
+
 Authors: Krupal, Rachael
 
 """
@@ -22,6 +27,7 @@ from sklearn.cluster import KMeans
 #local system hangs while processing GMM so commented out for now
 from sklearn.mixture import GaussianMixture
 import matplotlib as plt
+from kneed import KneeLocator # to identify the elbow point programmatically
 
 parser = argparse.ArgumentParser()
 
@@ -35,39 +41,48 @@ parser.add_argument(
 
 """ Clustering parameters """
 
-#parser.add_argument(
-#    "--clustering",
-#    action="store_true",
-#    help="Performing clustering right after ae training",
-#)
-
 parser.add_argument(
-    "--calc_optimal_num_clusters", type=str, default='gap', help="use elbow or gap statistics to find the optimal number of clusters",
+    "--calc_optimal_num_clusters", type=str, default=None, help="use elbow or gap statistics or both (comparison) to find the optimal number of clusters",
 )
 
 parser.add_argument(
-    "--num_clusters", type=int, default=4, help="The number of clusters to cluster all the data points."
+    "--num_clusters", type=int, default=None, help="The number of clusters to cluster all the data points."
 )
+
+parser.add_argument(
+    "--clustering_algorithm",
+    type=str,
+    default=None,
+    help="Use either KMeans or GMM to cluster the embeddings",
+)
+
 
 ARGS = parser.parse_args()
+
+kmeans_kwargs = {
+    "init": "k-means++",
+    "n_init": 10,
+    "max_iter": 300,
+    "random_state": 42,
+}
 
 class Elbow:
     """ Finding optimal number of clusters, by plotting elbow curve on KMeans scores (negative of the K-means objective)"""
 
-    def __init__(self, num_clusters=range(1,30), init='k-means++', random_state=0, max_iter=300):
+    def __init__(self, num_clusters=range(1,15), **kmeans_kwargs):
         self._num_clusters = num_clusters
         self._init = init
         self._random_state = random_state
         self._max_iter = max_iter
 
-    def calc(self, inputs):
+    def kmeans(self, inputs):
         kmeans = [KMeans(
             n_clusters=i,
             init = self._init,
             random_state = self._random_state,
             max_iter = self._max_iter,
         ) for i in self._num_clusters]
-        scores = [kmeans[i].fit(inputs).score(inputs) for i in range(len(kmeans))]
+        scores = [kmeans[i].fit(inputs).inertia_ for i in range(len(kmeans))]
         return scores
 
     def elbow_plot(self, scores, path):
@@ -77,9 +92,58 @@ class Elbow:
         plt.title('Elbow curve')
         plt.savefig(os.path.join(path, 'ElbowCurve.png'))
 
+    def get_elbow(self, scores):
+        kl = KneeLocator(
+            self._num_clusters, scores, curve
+        )
+        return kl.elbow
 
-class GapStatistics:
-    def __init__(self):
+
+def gap_optimalK(data, num_refs=3, maxClusters=15):
+    """
+    Calculate kMeans optimal number of clusters using Gap statistics
+
+    :param data: (n_samples, n_features)
+    :param num_refs: number of sample reference datasets to create
+    :param maxClusters: Maximum number of clusters to test for
+
+    :return: (gaps, optimalK)
+    """
+
+    gaps = np.zeros((len(range(1, maxClusters)),))
+    resultsdf = pd.DataFrame({'clusterCount': [], 'gap': []})
+
+    for gap_index, k in enumerate(range(1, maxClusters)):
+        # Holder for reference dispersion results
+        refDisps = np.zeros(nrefs)
+
+        # For n references, generate random sample and perform kmeans getting resulting dispersion of each loop
+        for i in range(nrefs):
+            # Create new random reference set
+            randomReference = np.random.random_sample(size=data.shape)
+
+            # Fit to it
+            km = KMeans(k)
+            km.fit(randomReference)
+
+            refDisp = km.inertia_
+            refDisps[i] = refDisp  # Fit cluster to original data and create dispersion
+        km = KMeans(k)
+        km.fit(data)
+
+        origDisp = km.inertia_  # Calculate gap statistic
+        gap = np.log(np.mean(refDisps)) - np.log(origDisp)  # Assign this loop's gap statistic to gaps
+        gaps[gap_index] = gap
+
+        resultsdf = resultsdf.append({'clusterCount': k, 'gap': gap}, ignore_index=True)
+        return (gaps.argmax() + 1, resultsdf)
+        score_g, df = optimalK(cluster_df, nrefs=5, maxClusters=30)
+        plt.plot(df['clusterCount'], df['gap'], linestyle='--', marker='o', color='b');
+    plt.xlabel('K');
+    plt.ylabel('Gap Statistic');
+    plt.title('Gap Statistic vs. K');
+
+
 
 if __name__ == '__main__':
 
@@ -103,19 +167,28 @@ if __name__ == '__main__':
             bottleneck_output = np.reshape(bottleneck_output.detach().numpy(), newshape=(-1))
             bottleneck_outputs.append(bottleneck_output)
 
-    if ARGS.calc_optimal_num_clusters == 'elbow':
-        """ Finding optimal number of clusters, by using elbow curve (below are default values)"""
-        elbow = Elbow(
-            num_clusters=range(1, 30),
-            init='k-means++',
-            random_state=0,
-            max_iter=300
-        )
-        scores = elbow.calc(bottleneck_output)
-        elbow.elbow_plot(scores.ARGS.clustering_dir)
-    elif ARGS.calc_optimal_num_clusters == 'gap':
+    # calculate the optimal number of clusters using elbow or gap statistics
+    if ARGS.calc_optimal_num_clusters is not None:
 
-    elif ARGS.num_clusters is not None:
+        if ARGS.calc_optimal_num_clusters == 'elbow':
+            """ Finding optimal number of clusters, by using elbow curve (below are default values)"""
+            elbow = Elbow(
+                num_clusters=range(1, 30),
+                init='k-means++',
+                random_state=0,
+                max_iter=300
+            )
+            scores = elbow.calc(bottleneck_output)
+            elbow.elbow_plot(scores.ARGS.clustering_dir)
+        elif ARGS.calc_optimal_num_clusters == 'gap':
+
+        elif ARGS.calc_optimal_num_clusters == 'comparison':
+
+
+
+    # if you already know how many clusters you would like to have,
+    # you could directly train the clustering model and cluster the embeddings
+    if ARGS.num_clusters is not None:
 
         # add ARGS for number of clusters
         kmeans = KMeans(n_clusters=2, random_state=0)
@@ -139,9 +212,8 @@ if __name__ == '__main__':
 
             df = df.append(dict(zip(df.columns, [file_names[i]] + [pred_kmeans[i]])), ignore_index=True)
 
-        summary_dir = ARGS.summary_dir
-        if summary_dir is not None:
-            df.to_csv(summary_dir + "/Kmeans_clusters")
+        if ARGS.clustering_dir is not None:
+            df.to_csv(ARGS.clustering_dir + "/Kmeans_clusters")
 
 
 
