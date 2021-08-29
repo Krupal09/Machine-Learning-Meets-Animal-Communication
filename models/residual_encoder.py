@@ -58,6 +58,18 @@ class ResidualEncoder(ResidualBase):
         self.layer3 = self.make_layer(self.block_type, 256, self.block_sizes[2], (2, 2))
         self.layer4 = self.make_layer(self.block_type, 512, self.block_sizes[3], (2, 2))
 
+        self.hidden_layer = nn.Conv2d(
+            (512,16,8),
+            out_channels=4,
+            kernel_size=1,
+            stride=(1,1),
+            padding=get_padding(1),
+            bias=False,
+        )
+        #self.fc = nn.Linear()
+
+        #self._layer_output = dict()
+
     def forward(self, x):
         #print("The shape of input is ", x.size())
         x = self.conv1(x)
@@ -82,7 +94,8 @@ class ResidualEncoder(ResidualBase):
         #print("The shape of x coming from layer4 is ", x.size())
         # e.g. [1, 512, 12, 16]
         #torch.save(x, '/mnt/2ndSSD/Osnabrueck/SP/interpretability/cache/N7_4127_1993_088A_179188_180670_layer4')
-        return x
+        code = self.hidden_layer(x)
+        return code
 
     def model_opts(self):
         return self._opts
