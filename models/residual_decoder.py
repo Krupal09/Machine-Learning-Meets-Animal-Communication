@@ -81,6 +81,7 @@ class ResidualDecoder(ResidualBase):
             # Extract latent code z and pass it through
             x, z = x
         # bring hidden layer back to (512, 16,8)
+        x = x.view(x.size(0), 16, 8)
         x = self.hidden_layer(x)
         #print("In decoder, the shape of input into layer1 is ", x.size())
         # latent input data encoder

@@ -94,7 +94,8 @@ class ResidualEncoder(ResidualBase):
         #print("The shape of x coming from layer4 is ", x.size())
         # e.g. [1, 512, 12, 16]
         #torch.save(x, '/mnt/2ndSSD/Osnabrueck/SP/interpretability/cache/N7_4127_1993_088A_179188_180670_layer4')
-        code = self.hidden_layer(x)
+        x = self.hidden_layer(x)
+        code = x.view(x.size(0), -1)
         return code
 
     def model_opts(self):
