@@ -24,7 +24,7 @@ class ResidualDecoder(ResidualBase):
         self.block_type = get_block_type(opts["resnet_size"]) # BasicBlock or Bottleneck
 
         self.hidden_layer = nn.Conv2d(
-            (4, 16, 8),
+            4,
             out_channels=512,
             kernel_size=1,
             stride=(1, 1),
@@ -81,9 +81,10 @@ class ResidualDecoder(ResidualBase):
             # Extract latent code z and pass it through
             x, z = x
         # bring hidden layer back to (512, 16,8)
-        x = x.view(x.size(0), 16, 8)
+        #x = x.view(x.size(0), 16, 8)
+        print("The shape of x going into decoder ", x.size())
         x = self.hidden_layer(x)
-        #print("In decoder, the shape of input into layer1 is ", x.size())
+        print("In decoder, the shape of input into layer1 is ", x.size())
         # latent input data encoder
         #self._layer_output["input_layer"] = x
         # first residual layer start
@@ -91,28 +92,28 @@ class ResidualDecoder(ResidualBase):
         # first residual layer end and output
         #self._layer_output["residual_layer1"] = x
         # second residual layer start
-        #print("The shape of x going into layer2 is ", x.size())
+        print("The shape of x going into layer2 is ", x.size())
         x = self.layer2(x)
         # second residual layer end and output
         #self._layer_output["residual_layer2"] = x
         # third residual layer start
-        #print("The shape of x going into layer3 is ", x.size())
+        print("The shape of x going into layer3 is ", x.size())
         x = self.layer3(x)
         # third residual layer end and output
         #self._layer_output["residual_layer3"] = x
         # fourth residual layer start
-        #print("The shape of x going into layer4 is ", x.size())
+        print("The shape of x going into layer4 is ", x.size())
         x = self.layer4(x)
         # fourth residual layer end and output
         #self._layer_output["residual_layer4"] = x
-        #print("The shape of x going into conv_out is ", x.size())
+        print("The shape of x going into conv_out is ", x.size())
         x = self.conv_out(x)
         x = self.activation_out(x)
         # reconstructed spectrogram
         #self._layer_output["output_layer"] = x
         if z is not None:
             x = (x, z)
-        #print("The shape of x being returned is ", x.size())
+        print("The shape of x being returned is ", x.size())
         return x
 
     def model_opts(self):
