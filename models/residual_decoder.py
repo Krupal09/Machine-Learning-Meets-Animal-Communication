@@ -23,6 +23,15 @@ class ResidualDecoder(ResidualBase):
         self.block_sizes = get_block_sizes(opts["resnet_size"])
         self.block_type = get_block_type(opts["resnet_size"]) # BasicBlock or Bottleneck
 
+        self.hidden_layer = nn.Conv2d(
+            (4, 16, 8),
+            out_channels=512,
+            kernel_size=1,
+            stride=(1, 1),
+            padding=get_padding(1),
+            bias=False,
+        )
+
         # Upsample ResNet layers with transposed convolution
         # block_size in resnet 18 is [2, 2, 2, 2]
         self.layer1 = self.make_layer(
@@ -71,6 +80,9 @@ class ResidualDecoder(ResidualBase):
         if isinstance(x, tuple):
             # Extract latent code z and pass it through
             x, z = x
+        # bring hidden layer back to (512, 16,8)
+        x = x.view(x.size(0), 16, 8)
+        x = self.hidden_layer(x)
         #print("In decoder, the shape of input into layer1 is ", x.size())
         # latent input data encoder
         #self._layer_output["input_layer"] = x

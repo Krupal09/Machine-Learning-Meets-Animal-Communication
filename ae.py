@@ -22,6 +22,14 @@ import argparse
 from torch.utils.data import Dataset, DataLoader, random_split
 from torchsummary import summary # model summary
 
+import numpy as np
+import pandas as pd
+from sklearn.cluster import KMeans
+#local system hangs while processing GMM so commented out for now
+from sklearn.mixture import GaussianMixture
+import matplotlib as plt
+
+
 from data.audiodataset import (
     get_audio_files_from_dir,
     get_broken_audio_files,
@@ -37,6 +45,7 @@ from models.residual_decoder import ResidualDecoder as Decoder
 from collections import OrderedDict
 from utils.logging import Logger
 from trainer import Trainer
+#from clustering import Elbow, GapStatistics
 
 parser = argparse.ArgumentParser()
 
@@ -225,6 +234,7 @@ parser.add_argument(
     default=None,
     help="Use max pooling after the initial convolution layer. For details, check residual_encoder.py",
 )
+
 
 ARGS = parser.parse_args()
 ARGS.cuda = torch.cuda.is_available() and ARGS.cuda # check if both hardware and user's intention of using cuda
@@ -470,6 +480,12 @@ if __name__ == "__main__":
     log.info("{} audio files in val_ds".format(len(val_ds)))
 
     #print("batch_size is ", ARGS.batch_size)
+    dataloader = torch.utils.data.DataLoader(
+            dataset,
+            batch_size=ARGS.batch_size,
+            num_workers=ARGS.num_workers,
+            pin_memory=True,
+        )
     train_dataloader = torch.utils.data.DataLoader(
             train_ds, #dataset,
             batch_size=ARGS.batch_size,
@@ -558,7 +574,7 @@ if __name__ == "__main__":
         )
     else:
         log.error("The model type you would like to save is not supported at the moment. Pls implement.")
-
+    
     log.close()
 
     """Leftover from previous trials. Could be removed when finalizing the script"""
