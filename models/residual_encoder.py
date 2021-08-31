@@ -60,6 +60,7 @@ class ResidualEncoder(ResidualBase):
 
     def forward(self, x):
         #print("The shape of input is ", x.size())
+        #print("data_in")
         x = self.conv1(x)
         #torch.save(x, '/mnt/2ndSSD/Osnabrueck/SP/interpretability/cache/N7_4127_1993_088A_179188_180670_conv1')
         x = self.bn1(x)
@@ -80,6 +81,7 @@ class ResidualEncoder(ResidualBase):
         #torch.save(x, '/mnt/2ndSSD/Osnabrueck/SP/interpretability/cache/N7_4127_1993_088A_179188_180670_layer3')
         x = self.layer4(x)
         #print("The shape of x coming from layer4 is ", x.size())
+        #print("data_out")
         # e.g. [1, 512, 12, 16]
         #torch.save(x, '/mnt/2ndSSD/Osnabrueck/SP/interpretability/cache/N7_4127_1993_088A_179188_180670_layer4')
         return x
