@@ -43,14 +43,14 @@ class BasicBlock(nn.Module):
                 bias=False,
             )
         else:
-            self.shortcut = upsample # nn.ConvTranspose2d()
+            self.shortcut = upsample # decoder - nn.ConvTranspose2d(): instantiated in make_layer()
             self.conv1 = nn.ConvTranspose2d(
-                in_ch,
-                mid_ch,
+                in_ch, # 512
+                mid_ch, # 512
                 kernel_size=3,
-                stride=stride,
-                padding=get_padding(3),
-                output_padding=get_padding(stride),
+                stride=stride, # (2,2)
+                padding=get_padding(3), # 3 // 2 = 1
+                output_padding=get_padding(stride), # 2 // 2 =0
                 bias=False,
             )
         self.bn1 = nn.BatchNorm2d(mid_ch)
@@ -64,11 +64,13 @@ class BasicBlock(nn.Module):
     def forward(self, x):
         residual = x
 
-        out = self.conv1(x)
+        out = self.conv1(x) # for decoder: ConvTransposed2d
+        print("conv1 layer is ", self.conv1)
         out = self.bn1(out)
         out = self.relu1(out)
 
         out = self.conv2(out)
+        print("conv1 layer is ", self.conv2)
         out = self.bn2(out)
 
         # whether shortcut (i.e. downsampled or upsampled input) exists or not is a signifier for entering the block for the 1st time or not
@@ -199,7 +201,7 @@ class ResidualBase(nn.Module):
                 padding=get_padding(3),
                 output_padding=get_padding(stride),
                 bias=False,
-            )
+            ) # the instantiated shortcut here goes into layers.append(block())
             layers.append(
                 block(
                     in_ch=self.cur_in_ch,
