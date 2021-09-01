@@ -71,7 +71,7 @@ class ResidualEncoder(ResidualBase):
         #self._layer_output = dict()
 
     def forward(self, x):
-        print("The shape of input is ", x.size())
+        #print("The shape of input is ", x.size())
         #x = x.permute(0,1,3,2)
         #print("The shape of input after permute is ", x.size())
         x = self.conv1(x)
@@ -83,24 +83,24 @@ class ResidualEncoder(ResidualBase):
             x = self.max_pool(x)
         # the output of convolution: [batch_size, number_of_kernels, w, h]
         # e.g. [1, 64, 95, 128]
-        print("The shape of x going into layer1 is ", x.size())
+        #print("The shape of x going into layer1 is ", x.size())
         x = self.layer1(x)
-        print("The shape of x coming from layer1 is ", x.size())
+        #print("The shape of x coming from layer1 is ", x.size())
         #torch.save(x, '/mnt/2ndSSD/Osnabrueck/SP/interpretability/cache/N7_4127_1993_088A_179188_180670_layer1')
         x = self.layer2(x)
-        print("The shape of x coming from layer2 is ", x.size())
+        #print("The shape of x coming from layer2 is ", x.size())
         #torch.save(x, '/mnt/2ndSSD/Osnabrueck/SP/interpretability/cache/N7_4127_1993_088A_179188_180670_layer2')
         x = self.layer3(x)
-        print("The shape of x coming from layer3 is ", x.size())
+        #print("The shape of x coming from layer3 is ", x.size())
         #torch.save(x, '/mnt/2ndSSD/Osnabrueck/SP/interpretability/cache/N7_4127_1993_088A_179188_180670_layer3')
         x = self.layer4(x)
-        print("The shape of x coming from layer4 is ", x.size())
+        #print("The shape of x coming from layer4 is ", x.size())
         #print("data_out")
         # e.g. [1, 512, 12, 16]
         #torch.save(x, '/mnt/2ndSSD/Osnabrueck/SP/interpretability/cache/N7_4127_1993_088A_179188_180670_layer4')
         x = self.hidden_layer(x)
         #code = x.view(x.size(0), -1)
-        print("The shape of x coming from encoder ", x.size())
+        #print("The shape of x coming from encoder ", x.size())
         return x #code
 
     def model_opts(self):
