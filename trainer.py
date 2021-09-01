@@ -239,7 +239,7 @@ class Trainer:
             call_label = None
 
             if "call" in label:
-                call_label = label["call"].to(device, non_blocking=True, dtype=torch.int64)
+                call_label = label["call"].to(device, non_blocking=True, dtype=torch.int64) #  e.g. tensor([True, True, True, True, True, True])
 
             data_loading_time.update(torch.Tensor([(time.time() - start_data_loading)]))
             optimizer.zero_grad()
@@ -262,12 +262,14 @@ class Trainer:
             train_running_loss += loss.item() * train_specs.size(0)
 
             prediction = None
+            #print("label is ", label, "call_label is ", call_label)
 
             if i % 2 == 0:
                 self.write_summaries(
                     features=train_specs,
-                    labels=call_label,
-                    prediction=prediction,
+                    #labels=call_label,
+                    #prediction=prediction,
+                    reconstructed=outputs,
                     file_names=label["file_name"],
                     epoch=epoch,
                     phase="train",
@@ -304,7 +306,7 @@ class Trainer:
             for i, (val_specs, label) in enumerate(val_dataloader):
                 val_specs = val_specs.to(device)
                 if "call" in label:
-                    call_label = label["call"].to(device, non_blocking=True, dtype=torch.int64)
+                    call_label = label["call"].to(device, non_blocking=True, dtype=torch.int64) # bool
 
                 data_loading_time.update(
                     torch.Tensor([(time.time() - start_data_loading)])
@@ -316,7 +318,7 @@ class Trainer:
                     #tb_writer.add_images("Original", val_specs, epoch)
                     # tb.close()
 
-                outputs = self.model(val_specs) # logits
+                outputs = self.model(val_specs)
 
                 #if counter == 0:
                     # tb = SummaryWriter()
@@ -332,9 +334,10 @@ class Trainer:
 
                 if i % 2 == 0:
                     self.write_summaries(
-                        features=val_specs,
-                        labels=call_label,
-                        prediction=prediction,
+                        features=val_specs, # original
+                        #labels=call_label,
+                        #prediction=prediction,
+                        reconstructed=outputs,
                         file_names=label["file_name"],
                         epoch=epoch,
                         phase=phase,
@@ -359,19 +362,22 @@ class Trainer:
     def write_summaries(
             self,
             features,
-            labels=None,
-            prediction=None,
+            #labels=None, #  tensor([True, True, True, True, True, True])
+            #prediction=None,
+            reconstructed=None,
             file_names=None,
             epoch=None,
             phase="train",
     ):
-        """Writes image summary per partition (spectrograms and the corresponding predictions)"""
+        #"""Writes image summary per partition (spectrograms and the corresponding predictions)"""
+        """Writes image summary per partition (spectrograms and reconstructed)"""
 
         with torch.no_grad():
             self.write_img_summaries(
                 features,
-                labels=labels,
-                prediction=prediction,
+                #labels=labels,
+                #prediction=prediction,
+                reconstructed=reconstructed,
                 file_names=file_names,
                 epoch=epoch + 1,
                 phase=phase,
@@ -381,8 +387,9 @@ class Trainer:
     def write_img_summaries(
             self,
             features,
-            labels=None,
-            prediction=None,
+            #labels=None,
+            #prediction=None,
+            reconstructed=None,
             file_names=None,
             epoch=None,
             phase="train",
@@ -398,12 +405,34 @@ class Trainer:
                     file_names = file_names.cpu().numpy()
                 elif isinstance(file_names, list):
                     file_names = np.asarray(file_names)
-            if labels is not None and prediction is not None:
+            #if labels is not None and prediction is not None:
+            if reconstructed is not None:
                 features = features.cpu()
-                labels = labels.cpu()
-                prediction = prediction.cpu()
-                for label in torch.unique(labels):
-                    label = label.item()
+                #labels = labels.cpu()
+                #prediction = prediction.cpu()
+                reconstructed = reconstructed.cpu()
+
+                self.writer.add_images(
+                    tag=phase + "/input",
+                    img_tensor=features[:self.n_summaries],
+                    #img_tensor=prepare_img(
+                    #    features, num_images=self.n_summaries, file_names=file_names
+                    #),
+                    global_step=epoch,
+                )
+
+                self.writer.add_images(
+                    tag=phase + "/reconstructed",
+                    img_tensor=reconstructed[:self.n_summaries],
+                    # img_tensor=prepare_img(
+                    #    features, num_images=self.n_summaries, file_names=file_names
+                    # ),
+                    global_step=epoch,
+                )
+
+                """ below are needed to visualize true positive/negative examples"""
+                """for label in torch.unique(labels): #  tensor(1, device='cuda:0')
+                    label = label.item() # Returns the value of this tensor as a standard Python number: 1
                     l_i = torch.eq(labels, label)
 
                     t_i = torch.eq(prediction, label) * l_i
@@ -442,7 +471,7 @@ class Trainer:
                         features, num_images=self.n_summaries, file_names=file_names
                     ),
                     global_step=epoch,
-                )
+                )"""
 
     """
     Writes scalar summary per partition including loss, confusion matrix, accuracy, recall, f1-score, true positive rate,
