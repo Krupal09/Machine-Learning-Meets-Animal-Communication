@@ -34,15 +34,28 @@ class ResidualDecoder(ResidualBase):
 
         # Upsample ResNet layers with transposed convolution
         # block_size in resnet 18 is [2, 2, 2, 2]
+
+        """option 1 (used in killer whale): [256, 128, 64, 64]"""
+        #self.layer1 = self.make_layer(
+        #    self.block_type, 256, self.block_sizes[3], (2, 2), "upsample"
+        #)  # 512 -> 256
+        #self.layer2 = self.make_layer(
+        #    self.block_type, 128, self.block_sizes[2], (2, 2), "upsample"
+        #)  # 256 -> 128
+        #self.layer3 = self.make_layer(
+        #    self.block_type, 64, self.block_sizes[1], (2, 2), "upsample"
+        #)  # 128 -> 64
+
+        """option 2: [512, 256, 128, 64]"""
         self.layer1 = self.make_layer(
-            self.block_type, 256, self.block_sizes[3], (2, 2), "upsample"
-        )  # 512 -> 256
+            self.block_type, 512, self.block_sizes[3], (2, 2), "upsample" # stride = (2,2) --> padding = (0,0)
+        )  # 512 -> 512
         self.layer2 = self.make_layer(
-            self.block_type, 128, self.block_sizes[2], (2, 2), "upsample"
-        )  # 256 -> 128
+            self.block_type, 256, self.block_sizes[2], (2, 2), "upsample"
+        )  # 512 -> 256
         self.layer3 = self.make_layer(
-            self.block_type, 64, self.block_sizes[1], (2, 2), "upsample"
-        )  # 128 -> 64; what to do when
+            self.block_type, 128, self.block_sizes[1], (2, 2), "upsample"
+        )  # 256 -> 128; what to do when
         if DefaultEncoderOpts["max_pool"] == 1:
             self.layer4 = self.make_layer(
                 self.block_type, 64, self.block_sizes[0], (2, 2), "upsample"
