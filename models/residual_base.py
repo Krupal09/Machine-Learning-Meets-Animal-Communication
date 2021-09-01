@@ -65,10 +65,12 @@ class BasicBlock(nn.Module):
         residual = x
 
         out = self.conv1(x) # for decoder: ConvTransposed2d
+        print("conv1 layer is ", self.conv1)
         out = self.bn1(out)
         out = self.relu1(out)
 
         out = self.conv2(out)
+        print("conv1 layer is ", self.conv2)
         out = self.bn2(out)
 
         # whether shortcut (i.e. downsampled or upsampled input) exists or not is a signifier for entering the block for the 1st time or not
