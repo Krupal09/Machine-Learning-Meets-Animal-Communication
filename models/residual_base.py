@@ -43,14 +43,14 @@ class BasicBlock(nn.Module):
                 bias=False,
             )
         else:
-            self.shortcut = upsample # decoder - nn.ConvTranspose2d(): instantiated in make_layer()
+            self.shortcut = upsample # decoder - nn.ConvTranspose2d(): instantiated in make_layer(); no BatchNorm2d
             self.conv1 = nn.ConvTranspose2d(
                 in_ch, # 512
                 mid_ch, # 512
                 kernel_size=3,
                 stride=stride, # (2,2)
                 padding=get_padding(3), # 3 // 2 = 1
-                output_padding=get_padding(stride), # 2 // 2 =0
+                output_padding=get_padding(stride), # 2 // 2 = 1
                 bias=False,
             )
         self.bn1 = nn.BatchNorm2d(mid_ch)
@@ -65,12 +65,12 @@ class BasicBlock(nn.Module):
         residual = x
 
         out = self.conv1(x) # for decoder: ConvTransposed2d
-        print("conv1 layer is ", self.conv1)
+        #print("conv1 layer is ", self.conv1)
         out = self.bn1(out)
         out = self.relu1(out)
 
         out = self.conv2(out)
-        print("conv1 layer is ", self.conv2)
+        #print("conv1 layer is ", self.conv2)
         out = self.bn2(out)
 
         # whether shortcut (i.e. downsampled or upsampled input) exists or not is a signifier for entering the block for the 1st time or not
@@ -202,15 +202,26 @@ class ResidualBase(nn.Module):
                 output_padding=get_padding(stride),
                 bias=False,
             ) # the instantiated shortcut here goes into layers.append(block())
-            layers.append(
-                block(
-                    in_ch=self.cur_in_ch,
-                    out_ch=out_ch,
-                    mid_ch=self.cur_in_ch // block.expansion,
-                    stride=stride,
-                    upsample=shortcut,
+            # treat BasicBlock and Bottleneck block differently to match encoder number of filters
+            if block == BasicBlock:
+                layers.append(
+                    block(
+                        in_ch=self.cur_in_ch,
+                        out_ch=out_ch,
+                        stride=stride,
+                        upsample=shortcut,
+                    )
                 )
-            )
+            else:
+                layers.append(
+                    block(
+                        in_ch=self.cur_in_ch,
+                        out_ch=out_ch,
+                        mid_ch=self.cur_in_ch // block.expansion,
+                        stride=stride,
+                        upsample=shortcut,
+                    )
+                )
 
         # for constructing shortcut, stride=2 is not enough;
         # e.g. 1st Bottleneck block in ResNet 50 has stride=1, yet number of channels increased by 4 at the output
