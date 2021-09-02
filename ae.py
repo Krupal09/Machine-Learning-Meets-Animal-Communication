@@ -562,7 +562,8 @@ if __name__ == "__main__":
         val_metric_mode = "min",
     )
 
-    path = os.path.join(ARGS.model_dir, "{}_model.pk".format(ARGS.model))
+    #path = os.path.join(ARGS.model_dir, "{}_model.pk".format(ARGS.model))
+    path = os.path.join(ARGS.model_dir, "{}_model.h5".format(ARGS.model)) #save DL model in h5
 
     if ARGS.model == "plain_ae":
        log.error("Save plain_ae model is not supported at the moment.")
@@ -715,6 +716,7 @@ if __name__ == "__main__":
 
 
     #path = os.path.join(ARGS.model_dir, "plain_ae.pk")
+    #path = os.path.join(ARGS.model_dir, "plain_ae.h5") #save DL model in h5
     #torch.save(model.state_dict(), path)
 
     #images = module_output_to_numpy(save_)
