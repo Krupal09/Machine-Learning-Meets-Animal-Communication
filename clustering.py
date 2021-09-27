@@ -83,6 +83,7 @@ parser.add_argument(
 parser.add_argument(
     "--decod_dir",
     type=str,
+    default=None,
     help="The directory to store the regenerated/decoded spectrograms.",
 )
 
@@ -180,10 +181,10 @@ def kmeans_optimalK(data, max_clusters=30):
     suggested_elbow = kl.elbow
     return scores, suggested_elbow
 
-def get_elbow(max_clusters, scores, curve="concave"):
+def get_elbow(max_clusters, scores, curve="convex", direction='decreasing'): #concave
     """Helper function to identify the elbow point programmatically"""
     kl = KneeLocator(
-        max_clusters, scores, curve
+        max_clusters, scores, curve, direction
     )
     return kl.elbow
 
@@ -248,15 +249,16 @@ def gap_optimalK(data, num_refs=4, max_clusters=15):
         gaps[gap_index] = gap
 
         resultsdf = resultsdf.append({'clusterCount': k, 'gap': gap}, ignore_index=True)
-        return (gaps.argmax() + 1, resultsdf)
+    return (gaps.argmax() + 1, resultsdf)
 
 def gap_plot(df, path):
+    print('clusterCount is ', df['clusterCount'])
     plt.plot(df['clusterCount'], df['gap'], linestyle='--', marker='o', color='b');
     plt.xlabel('K');
     plt.ylabel('Gap Statistic');
     plt.title('Gap Statistic vs. K');
     plt.savefig(os.path.join(path, 'GapStat.png'));
-    log.info("The elbow plot is saved under directory {}".format(path))
+    log.info("The gap plot is saved under directory {}".format(path))
 
 
 
@@ -264,7 +266,7 @@ if __name__ == '__main__':
 
     audio_files = get_audio_files()
     #Path(ARGS.decod_dir).mkdir(parents=True, exist_ok=True)
-    if not os.path.isdir(ARGS.decod_dir):
+    if ARGS.decod_dir is not None and os.path.isdir(ARGS.decod_dir):
         os.makedirs(ARGS.decod_dir, exist_ok=True)
 
     # load the trained model
@@ -364,7 +366,6 @@ if __name__ == '__main__':
     # collect embeddings for all data points
     file_names = []
     bottleneck_outputs = []
-    print("line335")
 
     with torch.no_grad():
         for i, (input_specs, label) in enumerate(data_loader):
@@ -376,15 +377,15 @@ if __name__ == '__main__':
             file_names.append(file_name)
             # log.info("File-name : {}".format(file_name))
 
-            print("line 353")
             input_specs = input_specs.to(device=ARGS.device)
             bottleneck_output = model.encoder(input_specs)
             bottleneck_output = bottleneck_output.cpu()
 
             print("bottleneck_output .shape : ", bottleneck_output.shape)
             print("bottleneck_output[0].shape :", bottleneck_output[0].shape)
-            img = bottleneck_output[0]
-            save_image(img, os.path.join(ARGS.decod_dir, 'encoder_bottleneck_{}.png'.format(i)))
+            # uncomment if wanting to visualize bottleneck features
+            #img = bottleneck_output[0]
+            #save_image(img, os.path.join(ARGS.decod_dir, 'encoder_bottleneck_{}.png'.format(i)))
 
             bottleneck_output = np.reshape(bottleneck_output.detach().numpy(), newshape=(-1))
             # bottleneck_output = torch.flatten(bottleneck_output)
@@ -403,8 +404,9 @@ if __name__ == '__main__':
             log.info("The suggested optimal K is {}".format(suggested_elbow))
             elbow_plot(ARGS.max_clusters, scores, ARGS.clustering_dir)
         elif ARGS.calc_optimal_num_clusters == 'gap':
-            score_g, df = gap_optimalK(bottleneck_outputs, num_refs=5, max_clusters=ARGS.max_clusters)
+            score_g, df = gap_optimalK(np.array(bottleneck_outputs), num_refs=5, max_clusters=ARGS.max_clusters)
             gap_plot(df, ARGS.clustering_dir)
+            log.info("The suggested optimal K is {}".format(score_g))
 
     # if you already know how many clusters you would like to have,
     # you could directly train the clustering model and cluster the embeddings
@@ -455,26 +457,27 @@ if __name__ == '__main__':
 
     #print("km.cluster_centers_ length :", len(km.cluster_centers_))
 
-    bottleneck_output = 0
-    with torch.no_grad():
-        for i in range(len(bottleneck_outputs)):
-            bottleneck_output = torch.tensor(bottleneck_outputs[i]).to(ARGS.device)
-            print("Krupal : bottleneck_output shape :", bottleneck_output.shape)
-            bottleneck_output = torch.reshape(bottleneck_output, (-1, 4, 4, 8)) #512
+    if ARGS.decod_dir is not None:
+        bottleneck_output = 0
+        with torch.no_grad():
+            for i in range(len(bottleneck_outputs)):
+                bottleneck_output = torch.tensor(bottleneck_outputs[i]).to(ARGS.device)
+                #print("Krupal : bottleneck_output shape :", bottleneck_output.shape)
+                bottleneck_output = torch.reshape(bottleneck_output, (-1, 4, 4, 8)) #512
 
-            print("bottleneck_output .shape : ", bottleneck_output.shape)
-            print("bottleneck_output[0].shape :", bottleneck_output[0].shape)
-            img = bottleneck_output[0]
-            save_image(img, os.path.join(ARGS.decod_dir, 'decoder_bottleneck_{}.png'.format(i)))
+                #print("bottleneck_output .shape : ", bottleneck_output.shape)
+                #print("bottleneck_output[0].shape :", bottleneck_output[0].shape)
+                img = bottleneck_output[0]
+                save_image(img, os.path.join(ARGS.decod_dir, 'decoder_bottleneck_{}.png'.format(i)))
 
-            # bottleneck_output = torch.reshape(bottleneck_output, (1, 512, 4, 8))
-            # not valid bottleneck_output = torch.unflatten(bottleneck_output, (1, 512, 4, 8))
-            # bottleneck_output = bottleneck_output.unflatten(-1, (512, 4, 8))
-            regenerate_spec = model.decoder(bottleneck_output)
-            # Krupal :
-            print("Decoder's regenerated spec from embeddings' shape :", regenerate_spec.shape)
-            epoch = "regenerated_spec_" + str(i)
-            save_decod_spec(regenerate_spec.cpu().data, epoch)  # change "cpu' to device
+                # bottleneck_output = torch.reshape(bottleneck_output, (1, 512, 4, 8))
+                # not valid bottleneck_output = torch.unflatten(bottleneck_output, (1, 512, 4, 8))
+                # bottleneck_output = bottleneck_output.unflatten(-1, (512, 4, 8))
+                regenerate_spec = model.decoder(bottleneck_output)
+                # Krupal :
+                #print("Decoder's regenerated spec from embeddings' shape :", regenerate_spec.shape)
+                epoch = "regenerated_spec_" + str(i)
+                save_decod_spec(regenerate_spec.cpu().data, epoch)  # change "cpu' to device
 
     log.close()
 
