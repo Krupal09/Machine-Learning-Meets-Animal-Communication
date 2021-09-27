@@ -436,7 +436,7 @@ if __name__ == '__main__':
             pred_gm = gm.fit_predict(bottleneck_outputs)
 
             log.info("predictions : {}".format(pred_gm))
-            print("Cluster centers of GaussianMixture : {:.8f}".format(gm.means_))
+            #print("Cluster centers of GaussianMixture : {:.8f}".format(gm.means_))
 
             df = pd.DataFrame(columns=["filename"] + ["cluster_number"])
 
