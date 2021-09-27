@@ -19,6 +19,7 @@ Authors: Krupal, Rachael
 """
 
 import os
+from pathlib import Path
 
 from math import ceil, floor
 from sklearn.mixture import GaussianMixture
@@ -28,16 +29,20 @@ import numpy as np
 from sklearn.cluster import KMeans
 #local system hangs while processing GMM so commented out for now
 from sklearn.mixture import GaussianMixture
-import matplotlib as plt
+import matplotlib.pyplot as plt
 from kneed import KneeLocator # to identify the elbow point programmatically
+import argparse
 
 import torch
+import torch.nn as nn
+from torchvision.utils import save_image, make_grid
 
 from models.residual_encoder import DefaultEncoderOpts
 from models.residual_encoder import ResidualEncoder as Encoder
+from models.residual_decoder import ResidualDecoder as Decoder
 #from models.residual_encoder import DefaultEncoderOpts, ResidualEncoder as Encoder
 from collections import OrderedDict
-from data.audiodataset import DefaultSpecDatasetOps, StridedAudioDataset
+from data.audiodataset import DefaultSpecDatasetOps, StridedAudioDataset, get_audio_files_from_dir, Dataset
 from utils.logging import Logger
 
 parser = argparse.ArgumentParser()
@@ -67,6 +72,18 @@ parser.add_argument(
     "--clustering_dir",
     type=str,
     help="The directory where the clustering outputs will be stored.",
+)
+
+parser.add_argument(
+    "--data_dir", # '/net/projects/scratch/winter/valid_until_31_July_2021/0-animal-communication/data_grid/Chimp_IvoryCoast/xxx'
+    type=str,
+    help="The path to the dataset directory.",
+)
+
+parser.add_argument(
+    "--decod_dir",
+    type=str,
+    help="The directory to store the regenerated/decoded spectrograms.",
 )
 
 """ Clustering parameters """
@@ -100,13 +117,6 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    "--threshold",
-    type=float,
-    default=0.5,
-    help="Threshold for the probability for detecting an orca.",
-)
-
-parser.add_argument(
     "--batch_size", type=int, default=1, help="The number of images per batch."
 )
 
@@ -121,13 +131,10 @@ parser.add_argument(
     help="Do not use cuda to train model.",
 )
 
-parser.add_argument(
-    "audio_files", type=str, nargs="+", help="Audio file to predict the call locations"
-)
-
-
 
 ARGS = parser.parse_args()
+ARGS.cuda = torch.cuda.is_available() and ARGS.cuda # check if both hardware and user's intention of using cuda
+ARGS.device = torch.device("cuda") if ARGS.cuda else torch.device("cpu")
 
 log = Logger("Clustering", ARGS.debug, ARGS.log_dir)
 
@@ -138,13 +145,39 @@ kmeans_kwargs = {
     "random_state": 42,
 }
 
+"""
+Get audio all audio files from the given data directory except they are broken.
+discard the can_load_from_csv() of orcaspot
+"""
+def get_audio_files():
+    audio_files = list(get_audio_files_from_dir(ARGS.data_dir))
+    log.info("Found {} audio files for training.".format(len(audio_files)))
+    if len(audio_files) == 0:
+        log.close()
+        exit(1)
+    return audio_files
+
+def save_decod_spec(spec, epoch):
+    #if not os.path.isdir(ARGS.decod_dir):
+    #    os.makedirs(ARGS.decod_dir, exist_ok=True)
+    spec = spec.view(spec.size(0), 1, 128, 256)
+    save_image(spec, os.path.join(ARGS.decod_dir, 'reconstructed_epoch_{}.png'.format(epoch)))
+
 def kmeans_optimalK(data, max_clusters=30):
     kmeans = [KMeans(
         n_clusters=i,
         **kmeans_kwargs,
-    ) for i in max_clusters]
+    ) for i in range(1, max_clusters+1)]
+    print("kmeans is ", kmeans)
     scores = [kmeans[i].fit(data).inertia_ for i in range(len(kmeans))]
-    suggested_elbow = get_elbow(scores)
+    print("scores are ", scores)
+    #x = range(1, max_clusters+1)
+    #calculation = np.abs(np.diff(x).mean())
+    #print(x)
+    #print(calculation)
+    #suggested_elbow = get_elbow(np.arange(1, max_clusters+1), scores)
+    kl = KneeLocator(np.arange(1, max_clusters+1), scores)
+    suggested_elbow = kl.elbow
     return scores, suggested_elbow
 
 def get_elbow(max_clusters, scores, curve="concave"):
@@ -155,7 +188,7 @@ def get_elbow(max_clusters, scores, curve="concave"):
     return kl.elbow
 
 def elbow_plot(max_clusters, scores, path):
-    plt.plot(max_clusters, scores, linestyle='--', marker='o', color='b')
+    plt.plot(np.arange(1, max_clusters+1), scores, linestyle='--', marker='o', color='b')
     plt.xlabel('Number of clusters')
     plt.ylabel('Score (negative of the K-means objective)')
     plt.title('Elbow curve with max_clusters={}'.format(max_clusters))
@@ -229,12 +262,22 @@ def gap_plot(df, path):
 
 if __name__ == '__main__':
 
+    audio_files = get_audio_files()
+    #Path(ARGS.decod_dir).mkdir(parents=True, exist_ok=True)
+    if not os.path.isdir(ARGS.decod_dir):
+        os.makedirs(ARGS.decod_dir, exist_ok=True)
+
     # load the trained model
     if ARGS.model_path is not None:
         model_dict = torch.load(ARGS.model_path)
-        encoder = Encoder(model_dict["encoderOpts"])
+        encoder = Encoder(model_dict["encoderOpts"]).to(ARGS.device)
         encoder.load_state_dict(model_dict["encoderState"])
-        model = encoder
+        decoder = Decoder(model_dict["decoderOpts"]).to(ARGS.device)
+        decoder.load_state_dict(model_dict["decoderState"])
+        #model = encoder
+        model = nn.Sequential(
+            OrderedDict([("encoder", encoder), ("decoder", decoder)])
+        )
         dataOpts = model_dict["dataOpts"]
 
     log.info(model)
@@ -256,43 +299,76 @@ if __name__ == '__main__':
     fmin = dataOpts["fmin"]
     fmax = dataOpts["fmax"]
     log.debug("dataOpts: " + str(dataOpts))
-    sequence_len = int(ceil(ARGS.sequence_len * sr))
+    #sequence_len = int(ceil(ARGS.sequence_len * sr))
+    sequence_len = int(
+        float(ARGS.sequence_len) / 1000 * dataOpts["sr"] / dataOpts["hop_length"]
+    )
     hop = int(ceil(ARGS.hop * sr))
 
-    log.info("Predicting {} files".format(len(ARGS.audio_files)))
+    log.info("Predicting {} files".format(len(audio_files)))
 
-    for file_name in ARGS.audio_files:
-        log.info(file_name)
-        dataset = StridedAudioDataset(
-            file_name.strip(),
-            sequence_len=sequence_len,
-            hop=hop,
-            sr=sr,
-            fft_size=n_fft,
-            fft_hop=hop_length,
-            n_freq_bins=n_freq_bins,
-            freq_compression=freq_compression, # added
-            f_min=fmin,
-            f_max=fmax,
-        )
-        data_loader = torch.utils.data.DataLoader(
-            dataset,
-            batch_size=ARGS.batch_size,
-            num_workers=ARGS.num_workers,
-            pin_memory=True,
+    #for file_name in audio_files:
+    #    log.info(file_name)
+    #    dataset = StridedAudioDataset(
+    #        os.path.join(ARGS.data_dir, file_name.strip()),
+    #        sequence_len=sequence_len,
+    #        hop=hop,
+    #        sr=sr,
+    #        fft_size=n_fft,
+    #        fft_hop=hop_length,
+    #        n_freq_bins=n_freq_bins,
+    #        freq_compression=freq_compression, # added
+    #        f_min=fmin,
+    #        f_max=fmax,
+    #    )
+    #    data_loader = torch.utils.data.DataLoader(
+    #        dataset,
+    #        batch_size=ARGS.batch_size,
+    #        num_workers=ARGS.num_workers,
+    #        pin_memory=True,
+    #    )
+
+    #    log.info("size of the file(samples)={}".format(dataset.n_frames))
+    #    log.info("size of hop(samples)={}".format(hop))
+    #    stop = int(max(floor(dataset.n_frames / hop), 1))
+    #    log.info("stop time={}".format(stop))
+
+    dataset = Dataset(
+        file_names=audio_files,
+        working_dir=ARGS.data_dir,
+        #cache_dir=ARGS.cache_dir,
+        sr=sr,
+        n_fft=n_fft,
+        hop_length=hop_length,
+        n_freq_bins=n_freq_bins,
+        freq_compression=freq_compression,
+        f_min=fmin,
+        f_max=fmax,
+        seq_len=sequence_len,
+        augmentation=None,
+        noise_files=None,
+    )
+
+    data_loader = torch.utils.data.DataLoader(
+        dataset,
+        batch_size=ARGS.batch_size, # default: 1
+        num_workers=ARGS.num_workers,
+        pin_memory=True,
         )
 
-        log.info("size of the file(samples)={}".format(dataset.n_frames))
-        log.info("size of hop(samples)={}".format(hop))
-        stop = int(max(floor(dataset.n_frames / hop), 1))
-        log.info("stop time={}".format(stop))
+    #log.info("size of the file(samples)={}".format(dataset.n_frames))
+    #log.info("size of hop(samples)={}".format(hop))
+    #stop = int(max(floor(dataset.n_frames / hop), 1))
+    #log.info("stop time={}".format(stop))
 
     # collect embeddings for all data points
     file_names = []
     bottleneck_outputs = []
+    print("line335")
 
     with torch.no_grad():
         for i, (input_specs, label) in enumerate(data_loader):
+            print(input_specs)
             # remove file path to have only file name, ex : ['path/to/directory/file_1.wav']
             file_name = str(label['file_name'])[::-1]  # reverse string
             file_name = file_name.split("/")[0]
@@ -300,10 +376,19 @@ if __name__ == '__main__':
             file_names.append(file_name)
             # log.info("File-name : {}".format(file_name))
 
-            if torch.cuda.is_available() and ARGS.cuda:
-                input_specs = input_specs.cuda()
-            bottleneck_output = model(input_specs)
+            print("line 353")
+            input_specs = input_specs.to(device=ARGS.device)
+            bottleneck_output = model.encoder(input_specs)
+            bottleneck_output = bottleneck_output.cpu()
+
+            print("bottleneck_output .shape : ", bottleneck_output.shape)
+            print("bottleneck_output[0].shape :", bottleneck_output[0].shape)
+            img = bottleneck_output[0]
+            save_image(img, os.path.join(ARGS.decod_dir, 'encoder_bottleneck_{}.png'.format(i)))
+
             bottleneck_output = np.reshape(bottleneck_output.detach().numpy(), newshape=(-1))
+            # bottleneck_output = torch.flatten(bottleneck_output)
+            # bottleneck_output = bottleneck_output.detach().numpy()
             bottleneck_outputs.append(bottleneck_output)
 
     log.debug("Finished extract code")
@@ -335,7 +420,7 @@ if __name__ == '__main__':
             df = pd.DataFrame(columns=["filename"] + ["cluster_number"])
 
             # print file names with respective cluster numbers
-            for i in range(len(dataloader)):
+            for i in range(len(data_loader)):
                 log.info("file name : {}, predicted cluster - Kmeans : {}".format(file_names[i], pred_kmeans[i]))
                 # log.info("file name : {}, predicted cluster - GaussianMixture : {}".format(file_names[i], pred_gm[i]))
 
@@ -364,6 +449,32 @@ if __name__ == '__main__':
         else:
             log.error("Pls choose a clustering algorithm - kmeans or gmm")
 
+    #summary_dir = ARGS.clustering_dir
+    #if summary_dir is not None:
+        #df.to_csv(summary_dir + "/Kmeans_clusters")
+
+    #print("km.cluster_centers_ length :", len(km.cluster_centers_))
+
+    bottleneck_output = 0
+    with torch.no_grad():
+        for i in range(len(bottleneck_outputs)):
+            bottleneck_output = torch.tensor(bottleneck_outputs[i]).to(ARGS.device)
+            print("Krupal : bottleneck_output shape :", bottleneck_output.shape)
+            bottleneck_output = torch.reshape(bottleneck_output, (-1, 4, 4, 8)) #512
+
+            print("bottleneck_output .shape : ", bottleneck_output.shape)
+            print("bottleneck_output[0].shape :", bottleneck_output[0].shape)
+            img = bottleneck_output[0]
+            save_image(img, os.path.join(ARGS.decod_dir, 'decoder_bottleneck_{}.png'.format(i)))
+
+            # bottleneck_output = torch.reshape(bottleneck_output, (1, 512, 4, 8))
+            # not valid bottleneck_output = torch.unflatten(bottleneck_output, (1, 512, 4, 8))
+            # bottleneck_output = bottleneck_output.unflatten(-1, (512, 4, 8))
+            regenerate_spec = model.decoder(bottleneck_output)
+            # Krupal :
+            print("Decoder's regenerated spec from embeddings' shape :", regenerate_spec.shape)
+            epoch = "regenerated_spec_" + str(i)
+            save_decod_spec(regenerate_spec.cpu().data, epoch)  # change "cpu' to device
 
     log.close()
 
