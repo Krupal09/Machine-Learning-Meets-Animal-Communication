@@ -430,6 +430,8 @@ if __name__ == '__main__':
 
             if ARGS.clustering_dir is not None:
                 df.to_csv(ARGS.clustering_dir + "/Kmeans_clusters")
+                log.info("kmeans_clusters csv is saved under directory {}".format(ARGS.clustering_dir))
+
 
         elif ARGS.clustering_algorithm == "gmm":
             gm = GaussianMixture(n_components=2, random_state=0)
@@ -447,6 +449,7 @@ if __name__ == '__main__':
 
             if ARGS.clustering_dir is not None:
                 df.to_csv(ARGS.clustering_dir + "/gmm_clusters")
+                log.info("gmm_clusters csv is saved under directory {}".format(ARGS.clustering_dir))
 
         else:
             log.error("Pls choose a clustering algorithm - kmeans or gmm")
