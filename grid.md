@@ -8,10 +8,11 @@
 5. Inside your folder run, `wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh`
 6. Run `chmod +x Miniconda3-latest-Linux-x86_64.sh`
 7. Run `./Miniconda3-latest-Linux-x86_64.sh`
-8. Make sure the path is set to your folder in the SP directory and not outside it. more details : Accept license terms. When asked to confirm the location for Miniconda3, specify the strach drive location with the suffix "/miniconda3"(or however the name you want). For example : [/home/student/k/your_id/miniconda3] >>> /net/projects/scratch/summer/valid_until_31_January_2022/your_id/miniconda3
+8. Make sure the path is set to your folder in the SP directory and not outside it. More details : Accept license terms. When asked to confirm the location for Miniconda3, specify the strach drive location with the suffix "/miniconda3"(or however the name you want). For example : [/home/student/k/your_id/miniconda3] >>> /net/projects/scratch/summer/valid_until_31_January_2022/your_id/miniconda3
 9. In case this does not work, check .bashrc file to make sure it points to the right path.
-10. Log out, and log in again
-11. Run `which conda`. You will be shown a version number. This means you have anaconda. You are mostly set up.
+10. If .bashrc file is directed to the correct path for the conda setup then you may try switching (to another system) by using ssh command. For example : ssh cippy09. The information about active and available system (cippy09 in this example) can always be confirmed with the supervisor.
+11. Log out, and log in again
+12. Run `which conda`. You will be shown a version number. This means you have anaconda. You are mostly set up.
 
 Beyond this point you can install any library using `conda install _arbitrarylibrary_`
 Refer to the docs of conda to learn more about its use.
