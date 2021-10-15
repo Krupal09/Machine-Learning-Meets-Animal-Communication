@@ -369,7 +369,7 @@ if __name__ == '__main__':
 
     with torch.no_grad():
         for i, (input_specs, label) in enumerate(data_loader):
-            print(input_specs)
+            #print(input_specs)
             # remove file path to have only file name, ex : ['path/to/directory/file_1.wav']
             file_name = str(label['file_name'])[::-1]  # reverse string
             file_name = file_name.split("/")[0]
@@ -381,8 +381,8 @@ if __name__ == '__main__':
             bottleneck_output = model.encoder(input_specs)
             bottleneck_output = bottleneck_output.cpu()
 
-            print("bottleneck_output .shape : ", bottleneck_output.shape)
-            print("bottleneck_output[0].shape :", bottleneck_output[0].shape)
+            #print("bottleneck_output .shape : ", bottleneck_output.shape)
+            #print("bottleneck_output[0].shape :", bottleneck_output[0].shape)
             # uncomment if wanting to visualize bottleneck features
             #img = bottleneck_output[0]
             #save_image(img, os.path.join(ARGS.decod_dir, 'encoder_bottleneck_{}.png'.format(i)))
@@ -428,8 +428,11 @@ if __name__ == '__main__':
 
                 df = df.append(dict(zip(df.columns, [file_names[i]] + [pred_kmeans[i]])), ignore_index=True)
 
-            if ARGS.clustering_dir is not None:
-                df.to_csv(ARGS.clustering_dir + "/Kmeans_clusters")
+            if ARGS.clustering_dir is not None: 
+                if Path(ARGS.clustering_dir).exists() == False:
+                    os.mkdir(ARGS.clustering_dir)
+                    
+                df.to_csv(ARGS.clustering_dir + "/Kmeans_clusters.csv")
                 log.info("kmeans_clusters csv is saved under directory {}".format(ARGS.clustering_dir))
 
 
@@ -448,11 +451,14 @@ if __name__ == '__main__':
                 df = df.append(dict(zip(df.columns, [file_names[i]] + [pred_gm[i]])), ignore_index=True)
 
             if ARGS.clustering_dir is not None:
-                df.to_csv(ARGS.clustering_dir + "/gmm_clusters")
+                if Path(ARGS.clustering_dir).exists() == False:
+                    os.mkdir(ARGS.clustering_dir)
+                                
+                df.to_csv(ARGS.clustering_dir + "/gmm_clusters.csv")
                 log.info("gmm_clusters csv is saved under directory {}".format(ARGS.clustering_dir))
 
         else:
-            log.error("Pls choose a clustering algorithm - kmeans or gmm")
+            log.error("Pls choose a clustering algorithm - kmeans or gmm (in a case sensitive manner)")
 
     #summary_dir = ARGS.clustering_dir
     #if summary_dir is not None:
@@ -460,6 +466,7 @@ if __name__ == '__main__':
 
     #print("km.cluster_centers_ length :", len(km.cluster_centers_))
 
+"""
     if ARGS.decod_dir is not None:
         bottleneck_output = 0
         with torch.no_grad():
@@ -483,7 +490,7 @@ if __name__ == '__main__':
                 save_decod_spec(regenerate_spec.cpu().data, epoch)  # change "cpu' to device
 
     log.close()
-
+"""
 
 
 
