@@ -350,10 +350,6 @@ class SaveOutput:
     def clear(self):
         self.outputs = []
 
-def save_decod_spec(spec, epoch):
-    spec = spec.view(spec.size(0), 1, 128, 256)
-    save_image(spec, os.path.join(ARGS.decod_dir, 'reconstructed_epoch_{}.png'.format(epoch)))
-
 def module_output_to_numpy(tensor):
     return tensor.detach().to('cpu').numpy()
 
@@ -419,8 +415,10 @@ if __name__ == "__main__":
             #log.debug("Encoder: " + str(encoder))
             #log.debug("Decoder: " + str(decoder))
 
+    log.debug(encoderOpts)
+    log.debug(decoderOpts)
     # write model description to standard output, uses summary from torchsummary
-    log.debug(summary(model, (1, 128, 256)))
+    log.info(summary(model, (1, 128, 256)))
 
     """-------------- data-related preparation ------------------"""
 

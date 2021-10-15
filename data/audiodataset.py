@@ -35,7 +35,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 Data preprocessing default options
 """
 DefaultSpecDatasetOps = {
-    "sr": 44100,
+    "sr": 16000, #44100
     "preemphases": 0.98, # could be treated as default
     "n_fft": 2048, # fft window size (s) = n_fft / sr
     "hop_length": 220, # number of hops = hop_length / sr

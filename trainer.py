@@ -13,11 +13,13 @@ import utils.metrics as m
 
 import torch
 import torch.nn as nn
+from torchvision.utils import save_image, make_grid
 
 
 from typing import Union
 from utils.logging import Logger
-from tensorboardX import SummaryWriter
+#from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 from utils.summary import prepare_img
 from delve import CheckLayerSat
 
@@ -241,13 +243,19 @@ class Trainer:
             if "call" in label:
                 call_label = label["call"].to(device, non_blocking=True, dtype=torch.int64) #  e.g. tensor([True, True, True, True, True, True])
 
+            if "ground_truth" in label:
+                ground_truth = label["ground_truth"].to(device, non_blocking=True)
+
             data_loading_time.update(torch.Tensor([(time.time() - start_data_loading)]))
             optimizer.zero_grad()
 
             # compute reconstructions
             outputs = self.model(train_specs)
 
-            # compute training reconstruction loss
+            # compute training reconstruction loss, when augmentation is used
+            # loss = loss_fn(outputs, ground_truth)
+
+            # compute training reconstruction loss, when no augmentation is used
             loss = loss_fn(outputs, train_specs)
 
             # compute accumulated gradients
@@ -312,19 +320,17 @@ class Trainer:
                     torch.Tensor([(time.time() - start_data_loading)])
                 )
 
-                #if counter == 0:
-                    # tb = SummaryWriter()
-                    # grid = make_grid(val_specs)
-                    #tb_writer.add_images("Original", val_specs, epoch)
-                    # tb.close()
+                # instead of converting spec. to color img, we save the 1-chn outputs directly produced by the network
+                if i % 2 == 0:
+                    #grid = make_grid(val_specs)
+                    self.writer.add_images("Original", val_specs, epoch) #val_specs
 
                 outputs = self.model(val_specs)
 
-                #if counter == 0:
+                if i % 2 == 0:
                     # tb = SummaryWriter()
-                    # grid = make_grid(outputs)
-                    #tb_writer.add_images("Reconstructed", outputs, epoch)
-                    # tb.close()
+                    #grid = make_grid(outputs)
+                    self.writer.add_images("Reconstructed", outputs, epoch) #outputs
 
                 loss = loss_fn(outputs, val_specs)
 

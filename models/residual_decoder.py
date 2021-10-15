@@ -6,7 +6,7 @@ from models.residual_encoder import DefaultEncoderOpts
 DefaultDecoderOpts = {
     "upsampling": "ConvTranspose2d", # MaxUnpool2d; (when maxpool is used, max unpooling; now only stride 2 is available)
     "output_channels": 1,
-    "conv_kernel_size": 7,
+    "conv_kernel_size": 3, #7
     "input_channels": 512,
     "resnet_size": 18,
     "output_activation": "sigmoid",
@@ -56,6 +56,7 @@ class ResidualDecoder(ResidualBase):
         self.layer3 = self.make_layer(
             self.block_type, 128, self.block_sizes[1], (2, 2), "upsample"
         )  # 256 -> 128; what to do when
+
         if DefaultEncoderOpts["max_pool"] == 1:
             self.layer4 = self.make_layer(
                 self.block_type, 64, self.block_sizes[0], (2, 2), "upsample"

@@ -13,7 +13,7 @@ from models.residual_base import ResidualBase, get_block_sizes, get_block_type
 
 DefaultEncoderOpts = {
     "input_channels": 1,
-    "conv_kernel_size": 7,
+    "conv_kernel_size": 3,#7
     "max_pool": 1,
     "resnet_size": 18,
 }
